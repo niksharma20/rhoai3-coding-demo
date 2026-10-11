@@ -50,7 +50,7 @@ projects:
   - name: modernized
     git:
       remotes:
-        origin: https://github.com/adnan-drina/${{ values.name }}.git
+        origin: https://github.com/niksharma20/${{ values.name }}.git
       checkoutFrom:
         revision: main
 components:

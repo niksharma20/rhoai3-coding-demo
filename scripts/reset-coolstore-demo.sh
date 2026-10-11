@@ -31,7 +31,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/scripts/lib.sh"
 
-REPO_OWNER="${REPO_OWNER:-adnan-drina}"
+REPO_OWNER="${REPO_OWNER:-niksharma20}"
 REPO_NAME="${REPO_NAME:-coolstore-inventory-service}"
 GOLDEN_BRANCH="${GOLDEN_BRANCH:-golden}"
 WORKSPACE_NS="${WORKSPACE_NS:-wksp-ai-developer}"

@@ -21,13 +21,9 @@ require_env GITHUB_TOKEN \
   "GitHub personal access token (classic, 'repo' scope) for owner ${GITHUB_OWNER:-<your GitHub org/user>}. Developer Hub's scaffolder uses it to read and publish the golden-path template repositories, and every build pipeline uses it to clone the application repo. If it is empty, the Developer Hub backend crashes on startup (scaffolder plugin) and pipelines cannot fetch source. Create at https://github.com/settings/tokens and put it in .env as GITHUB_TOKEN=..."
 require_env GITHUB_WEBHOOK_SECRET \
   "Shared secret configured on the GitHub repository webhook. The pipeline EventListener validates each push's HMAC signature against it, so a commit only triggers a build when the signature matches. Without it, commit-triggered pipeline runs never fire. Use any long random string and set the same value on the repo webhook; put it in .env as GITHUB_WEBHOOK_SECRET=..."
-require_env IMAGE_REGISTRY \
-  "Container image registry namespace the build pipeline pushes to, e.g. quay.io/<org>. The coolstore deployment pulls its image from here (tag :latest), and the seed + every exercise build push here. Without it the pipeline has nowhere to publish the image the running app expects. Set IMAGE_REGISTRY=quay.io/<your-org> in .env."
-require_env QUAY_ROBOT_USER \
-  "Robot account username with write access to \${IMAGE_REGISTRY}. The pipeline authenticates its image push with it. Create a robot account on your registry and set QUAY_ROBOT_USER=<org>+<robot> in .env."
-require_env QUAY_ROBOT_TOKEN \
-  "Robot account token paired with QUAY_ROBOT_USER. Without it the build cannot push and the coolstore :latest image is never (re)published, so pushes during the exercise produce no new deployment. Set QUAY_ROBOT_TOKEN=... in .env."
 assert_required_env
+# IMAGE_REGISTRY, QUAY_ROBOT_USER, and QUAY_ROBOT_TOKEN stay optional.
+# When they are empty the pipeline publishes to the internal OpenShift registry.
 
 log_step "Stage 050: Advanced Application Platform"
 log_info "Components: identity, devspaces, pipelines, sonarqube, rhdh, mta"
@@ -107,7 +103,8 @@ apply_stage_app "$STAGE_NAME"
 # successful pipeline run. Seed it here so a green PipelineRun and a
 # running app exist before the first demo exercise.
 COOLSTORE_REPO="coolstore-inventory-service"
-COOLSTORE_REPO_URL="https://github.com/adnan-drina/${COOLSTORE_REPO}.git"
+COOLSTORE_OWNER="${GITHUB_OWNER:-niksharma20}"
+COOLSTORE_REPO_URL="https://github.com/${COOLSTORE_OWNER}/${COOLSTORE_REPO}.git"
 
 seed_coolstore() {
   log_step "Coolstore seed: golden-path topic, pipeline run, deployment"
@@ -127,14 +124,14 @@ seed_coolstore() {
     local topics
     topics=$(curl -fsS -H "Authorization: Bearer ${GITHUB_TOKEN}" \
       -H "Accept: application/vnd.github+json" \
-      "https://api.github.com/repos/adnan-drina/${COOLSTORE_REPO}/topics" \
+      "https://api.github.com/repos/${COOLSTORE_OWNER}/${COOLSTORE_REPO}/topics" \
       | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin).get('names',[])))" 2>/dev/null || echo "")
     if [[ " ${topics} " != *" rhoai3-golden-path "* ]]; then
       local names_json
       names_json=$(python3 -c "import json,sys; print(json.dumps({'names': sorted(set(sys.argv[1].split() + ['rhoai3-golden-path']))}))" "${topics}")
       curl -fsS -X PUT -H "Authorization: Bearer ${GITHUB_TOKEN}" \
         -H "Accept: application/vnd.github+json" \
-        "https://api.github.com/repos/adnan-drina/${COOLSTORE_REPO}/topics" \
+        "https://api.github.com/repos/${COOLSTORE_OWNER}/${COOLSTORE_REPO}/topics" \
         -d "${names_json}" >/dev/null \
         && log_info "rhoai3-golden-path topic set on ${COOLSTORE_REPO}" \
         || log_warn "could not set repo topic — webhook pushes will not trigger builds"
@@ -190,7 +187,7 @@ seed_coolstore() {
   local head_sha
   head_sha=$(curl -fsS ${GITHUB_TOKEN:+-H "Authorization: Bearer ${GITHUB_TOKEN}"} \
     -H "Accept: application/vnd.github+json" \
-    "https://api.github.com/repos/adnan-drina/${COOLSTORE_REPO}/commits/main" \
+    "https://api.github.com/repos/${COOLSTORE_OWNER}/${COOLSTORE_REPO}/commits/main" \
     | python3 -c "import sys,json; print(json.load(sys.stdin)['sha'])")
   log_info "Seeding pipeline run for ${COOLSTORE_REPO}@${head_sha:0:7}"
 

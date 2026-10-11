@@ -126,7 +126,7 @@ spec:
         checkoutFrom:
           revision: main
         remotes:
-          origin: https://github.com/adnan-drina/coolstore-inventory-service.git
+          origin: https://github.com/niksharma20/coolstore-inventory-service.git
       name: agentic-coolstore
 ---
 # Mirror for the second demo user: identical workspace in wksp-ai-admin
@@ -260,5 +260,5 @@ spec:
         checkoutFrom:
           revision: main
         remotes:
-          origin: https://github.com/adnan-drina/coolstore-inventory-service.git
+          origin: https://github.com/niksharma20/coolstore-inventory-service.git
       name: agentic-coolstore

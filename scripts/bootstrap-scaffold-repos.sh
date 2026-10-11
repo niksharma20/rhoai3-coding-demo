@@ -19,7 +19,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GITHUB_OWNER="${GITHUB_OWNER:-adnan-drina}"
+GITHUB_OWNER="${GITHUB_OWNER:-niksharma20}"
 MIGRATION_GOLDEN_REPO="${MIGRATION_GOLDEN_REPO:-quarkus-migration-scaffold-v2}"
 MIGRATION_SRC="$REPO_ROOT/stages/080-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold"
 WORKDIR="$(mktemp -d)"

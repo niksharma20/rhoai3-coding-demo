@@ -399,7 +399,7 @@ Stage 040 validation must keep asserting that `maas-api` uses `registry.redhat.i
 - [ ] Tekton Chains signed provenance on `app-platform-push` once a Securesign instance exists.
 - [ ] Developer Lightspeed overlay for Developer Hub, after a live LCS-to-MaaS protocol check.
 - [ ] Trusted-delivery stage: SLSA, sigstore, SBOM and TPA for the migrated app, after a concrete pipeline and validation path exist.
-- [ ] `GITHUB_OWNER` substitution so a fresh environment is not tied to `adnan-drina`. Land as one change after the fork step is documented.
+- [ ] `GITHUB_OWNER` substitution so a fresh environment is not pinned to one account. This copy uses `niksharma20` for stage 050 application repositories.
 - [ ] Per-user MaaS subscriptions. `ai-developer` and `ai-admin` currently share one key set.
 - [ ] Pick one scaffold source of truth so `scaffold-repo/` cannot drift from the live golden unnoticed. Stage 070 validate warns on drift.
 - [ ] Developer Lightspeed / Kai stays removed until the demo needs it. Restoring it recouples MTA to a healthy model upstream. The console API-key path works without it.

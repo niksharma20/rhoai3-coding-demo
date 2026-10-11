@@ -44,7 +44,7 @@ spec:
       name: Fetch Quarkus scaffold golden repository
       action: fetch:plain
       input:
-        url: https://github.com/adnan-drina/agentic-quarkus-scaffold/tree/main
+        url: https://github.com/niksharma20/agentic-quarkus-scaffold/tree/main
 
     # The platform coolstore entity carries cluster-real link URLs (the
     # generate-rhdh-catalog hook substitutes route hostnames at sync time).
@@ -71,13 +71,13 @@ spec:
           name: ${{ parameters.name }}
           sonarqubeUrl: ${{ steps['platform-entity'].output.entity.metadata.links[3].url | replace('coolstore-inventory-service', parameters.name) }}
           # Match the branch recorded by the resolver when reopening this repo.
-          devspacesUrl: ${{ steps['platform-entity'].output.entity.metadata.links[2].url | replace('/dashboard/#/ide/wksp-ai-developer/agentic-coolstore', '') }}/#https://github.com/adnan-drina/${{ parameters.name }}?revision=main&existing=${{ parameters.name }}
+          devspacesUrl: ${{ steps['platform-entity'].output.entity.metadata.links[2].url | replace('/dashboard/#/ide/wksp-ai-developer/agentic-coolstore', '') }}/#https://github.com/niksharma20/${{ parameters.name }}?revision=main&existing=${{ parameters.name }}
 
     - id: publish
       name: Publish to GitHub
       action: publish:github
       input:
-        repoUrl: github.com?owner=adnan-drina&repo=${{ parameters.name }}
+        repoUrl: github.com?owner=niksharma20&repo=${{ parameters.name }}
         description: "Quarkus application scaffold (golden path: agentic, spec-driven development)"
         repoVisibility: public
         defaultBranch: main

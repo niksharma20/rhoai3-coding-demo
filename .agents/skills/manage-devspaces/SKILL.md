@@ -26,7 +26,7 @@ description: >-
 - **Factory workspaces**: Stages 070 and 080 create per-run DevWorkspaces from RHDH templates (`agentic-quarkus-scaffold`, `app-migration`). Those destfiles live in the cloned repo; GitOps does not pre-create the CRs. Both destfiles set `controller.devfile.io/storage-type: per-workspace` so they can run beside `agentic-coolstore` without multi-attaching the per-user RWO `claim-devworkspace`.
 - **Retired standing seats** (do not recreate): `getting-started-ai-coding`, `coolstore-inventory-service`, `mca-coolstore`.
 - **Cloned repos**:
-  - `https://github.com/adnan-drina/coolstore-inventory-service.git` — Stage 060 `agentic-coolstore` project
+  - `https://github.com/niksharma20/coolstore-inventory-service.git` — Stage 060 `agentic-coolstore` project
   - Stage 070/080 factory repos are published per run; Stage 080 also clones the legacy URL as `/projects/legacy`
 - **Extensions**: Kilo Code 7.4.8 via `DEFAULT_EXTENSIONS` on `agentic-coolstore`. MTA 8.2.0 (pack + core + java + redhat.java) via the Stage 080 factory destfile.
 - **GitOps**: Managed by Argo CD `050-advanced-app-platform` with a repair hook (no Replace on DevWorkspaces)
@@ -192,7 +192,7 @@ subjects:
 
 ## Agentic Workspace
 
-The `agentic-coolstore` DevWorkspace is the Stage 060 catalog entry point. It clones `adnan-drina/coolstore-inventory-service` and selects Kilo Code. Open it from Developer Hub → Coolstore Inventory Service → **Dev Spaces**, not from a factory URL. Stage 070/080 seats are separate factory workspaces.
+The `agentic-coolstore` DevWorkspace is the Stage 060 catalog entry point. It clones `niksharma20/coolstore-inventory-service` and selects Kilo Code. Open it from Developer Hub → Coolstore Inventory Service → **Dev Spaces**, not from a factory URL. Stage 070/080 seats are separate factory workspaces.
 
 ## Users
 

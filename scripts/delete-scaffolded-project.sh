@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_ROOT/scripts/lib.sh"
 
-REPO_OWNER="${REPO_OWNER:-adnan-drina}"
+REPO_OWNER="${REPO_OWNER:-niksharma20}"
 WORKSPACE_NS="${WORKSPACE_NS:-wksp-ai-developer}"
 QUAY_ORG="${QUAY_ORG:-rhoai3-coding-demo}"
 

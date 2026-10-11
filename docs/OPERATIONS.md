@@ -791,8 +791,8 @@ The script rewinds `main` to `golden` via the GitHub API, recreates the `agentic
 **Advancing the baseline:** when the demo app legitimately evolves, push the new baseline commit to `main`, verify the pipeline is green, then update the golden branch:
 
 ```bash
-gh api -X PATCH "repos/adnan-drina/coolstore-inventory-service/git/refs/heads/golden" \
-  -f sha="$(gh api repos/adnan-drina/coolstore-inventory-service/git/refs/heads/main --jq .object.sha)" \
+gh api -X PATCH "repos/niksharma20/coolstore-inventory-service/git/refs/heads/golden" \
+  -f sha="$(gh api repos/niksharma20/coolstore-inventory-service/git/refs/heads/main --jq .object.sha)" \
   -F force=true
 ```
 

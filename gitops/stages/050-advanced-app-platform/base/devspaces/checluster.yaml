@@ -40,7 +40,7 @@ spec:
     # "Restrict which URLs can create workspaces"; wildcards supported).
     allowedSources:
       urls:
-        - "https://github.com/adnan-drina/*"
+        - "https://github.com/niksharma20/*"
     storage:
       pvcStrategy: per-user
     defaultNamespace:

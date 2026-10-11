@@ -62,7 +62,7 @@ authorize a second migration seat.
 
 ## External Setup (one-time, outside the cluster)
 
-1. **Golden repositories** under `github.com/adnan-drina`: run `./scripts/bootstrap-scaffold-repos.sh` (requires `gh` auth with `repo` scope). Re-running force-pushes golden state — that is the reset.
+1. **Golden repositories** under `github.com/niksharma20`: run `./scripts/bootstrap-scaffold-repos.sh` (requires `gh` auth with `repo` scope). Re-running force-pushes golden state — that is the reset.
 2. **GitHub PAT** (classic, `repo` scope) in `.env` as `GITHUB_TOKEN`: used by RHDH (scaffolder repo creation + catalog reads) and the pipeline's git-clone for private repos. A GitHub App cannot replace it here — installation tokens cannot create repositories under a personal account.
 3. **GitHub App** (Settings → Developer settings → GitHub Apps) for webhook delivery: webhook URL = the `app-platform-listener` Route URL, webhook secret = `GITHUB_WEBHOOK_SECRET` from `.env`. Repository permissions: **Contents: Read-only** (required to subscribe to push events) plus the mandatory Metadata: Read-only. Subscribe to **Push** events and install on **All repositories** (covers future template-created repos). No client secret or private key is needed — the App only delivers webhooks.
 

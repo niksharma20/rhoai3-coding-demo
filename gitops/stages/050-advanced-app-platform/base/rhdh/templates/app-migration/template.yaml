@@ -60,7 +60,7 @@ spec:
         legacyRepoUrl:
           title: Legacy repository URL
           type: string
-          default: https://github.com/adnan-drina/coolstore-cart-legacy.git
+          default: https://github.com/niksharma20/coolstore-cart-legacy.git
           description: |
             HTTPS Git URL of the application to migrate (must be clonable
             without credentials). Known demo freeze-forks auto-stamp the
@@ -110,7 +110,7 @@ spec:
       input:
         # Live Stage 080 golden. Historical quarkus-migration-scaffold is not
         # the template source. Do not GitHub-rename v1.
-        url: https://github.com/adnan-drina/quarkus-migration-scaffold-v2/tree/main
+        url: https://github.com/niksharma20/quarkus-migration-scaffold-v2/tree/main
 
     # The platform coolstore entity carries cluster-real link URLs (the
     # generate-rhdh-catalog hook substitutes route hostnames at sync time).
@@ -168,13 +168,13 @@ spec:
           sonarqubeUrl: ${{ steps['platform-entity'].output.entity.metadata.links[3].url | replace('coolstore-inventory-service', parameters.name) }}
           # Dashboard 3.30.1 compares the factory revision with checkoutFrom.
           # An omitted revision does not match main and permits a suffixed copy.
-          devspacesUrl: ${{ steps['platform-entity'].output.entity.metadata.links[2].url | replace('/dashboard/#/ide/wksp-ai-developer/agentic-coolstore', '') }}/#https://github.com/adnan-drina/${{ parameters.name }}?revision=main&existing=${{ parameters.name }}
+          devspacesUrl: ${{ steps['platform-entity'].output.entity.metadata.links[2].url | replace('/dashboard/#/ide/wksp-ai-developer/agentic-coolstore', '') }}/#https://github.com/niksharma20/${{ parameters.name }}?revision=main&existing=${{ parameters.name }}
 
     - id: publish
       name: Publish destination repository to GitHub
       action: publish:github
       input:
-        repoUrl: github.com?owner=adnan-drina&repo=${{ parameters.name }}
+        repoUrl: github.com?owner=niksharma20&repo=${{ parameters.name }}
         description: "Quarkus migration destination (golden path: AI-autonomous migration)"
         repoVisibility: public
         defaultBranch: main

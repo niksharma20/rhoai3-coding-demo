@@ -97,7 +97,7 @@ spec:
                     exit 0
                   fi
 
-                  REPO_OWNER="${REPO_OWNER:-adnan-drina}"
+                  REPO_OWNER="${REPO_OWNER:-niksharma20}"
 
                   # Scaffolded projects' publish-time push races namespace
                   # creation, so their first PipelineRun never materializes
