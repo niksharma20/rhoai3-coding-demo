@@ -73,7 +73,7 @@ The GPU-as-a-Service layer on top of the Stage 010 base platform.
 
 ## What To Notice And Why It Matters
 
-- **Two cards, one model per card** — no time-slicing because vLLM servers sharing a sliced card OOM at weight load; full-card placement is the RHOAI 3.4-aligned mechanism
+- **Two cards, one model per card** — no time-slicing because vLLM servers sharing a sliced card OOM at weight load; full-card placement is the mechanism this demo uses
 - **Non-preemptive queues** — RHOAI workbenches are not suspendable, so "GPU Priority" is a dedicated quota lane, not a preemption demonstration
 - **Cohort-based fair sharing** — `cq-gpu-shared` and `cq-gpu-priority` share a `gpu-pool` cohort for future borrowing; `cq-gpu-reserved-demo` has no cohort (true isolation)
 - **GPU quota currently zero on shared/priority** — both physical cards are claimed by the private models; raise quota when GPU nodes are added
@@ -100,7 +100,7 @@ OpenShift Machine API creates GPU worker capacity from a declarative MachineSet.
 | Product | Version/Channel |
 |---------|-----------------|
 | Red Hat OpenShift Container Platform | 4.20 (Machine API) |
-| Red Hat OpenShift AI Self-Managed | stable-3.4 (hardware profiles, Kueue integration) |
+| Red Hat OpenShift AI Self-Managed | stable-3.5 (hardware profiles, Kueue integration) |
 | Node Feature Discovery Operator | stable (CSV nfd.4.20.0) |
 | NVIDIA GPU Operator (certified) | v26.3 (CSV gpu-operator-certified.v26.3.2) |
 | Red Hat build of Kueue | stable-v1.3 (CSV kueue-operator.v1.3.1) |
@@ -132,9 +132,9 @@ RHOAI_GPU_MACHINESET_REPLICAS=2 \
 
 | Source | Role |
 |--------|------|
-| [RHOAI 3.4 - Working with accelerators](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/working_with_accelerators/index) | NVIDIA GPU enablement and hardware profiles |
-| [RHOAI 3.4 - Managing workloads with Kueue](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/managing_openshift_ai/managing-workloads-with-kueue) | Kueue integration posture |
-| [RHOAI 3.4 - Managing distributed workloads](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/managing_openshift_ai/managing-distributed-workloads_managing-rhoai) | ResourceFlavor, ClusterQueue, LocalQueue concepts |
+| [RHOAI 3.5 - Working with accelerators](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html-single/working_with_accelerators/index) | NVIDIA GPU enablement and hardware profiles |
+| [RHOAI 3.5 - Managing workloads with Kueue](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/managing_openshift_ai/managing-workloads-with-kueue) | Kueue integration posture |
+| [RHOAI 3.5 - Managing distributed workloads](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/managing_openshift_ai/managing-distributed-workloads_managing-rhoai) | ResourceFlavor, ClusterQueue, LocalQueue concepts |
 | [OCP 4.20 - Machine management](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/machine_management/index) | AWS MachineSet management |
 | [OCP 4.20 - Node Feature Discovery](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/specialized_hardware_and_driver_enablement/index#psap-node-feature-discovery-operator) | NFD Operator and hardware feature labels |
 

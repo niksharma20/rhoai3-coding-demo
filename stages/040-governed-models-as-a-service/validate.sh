@@ -28,6 +28,7 @@ PINNED_LIMITADOR_CSV="${RHOAI_PINNED_LIMITADOR_CSV:-limitador-operator.v1.3.1}"
 OPENAI_MODEL_ID="${RHOAI_OPENAI_MODEL_ID:-gpt-4o-mini}"
 OPENAI_MODEL_RESOURCE="${RHOAI_OPENAI_MODEL_RESOURCE:-gpt-4o-mini}"
 OPENAI_PROVIDER_SECRET="${RHOAI_OPENAI_PROVIDER_SECRET:-openai-provider-api-key}"
+ANTHROPIC_PROVIDER_SECRET="${RHOAI_ANTHROPIC_PROVIDER_SECRET:-anthropic-provider-api-key}"
 OPENAI_ACCESS_RESOURCE="${RHOAI_OPENAI_ACCESS_RESOURCE:-personal-kube-admin}"
 QWEN27B_MODEL_RESOURCE="${RHOAI_MAAS_QWEN27B_MODEL_NAME:-qwen3-6-27b}"
 QWEN38_MODEL_RESOURCE="${RHOAI_MAAS_QWEN38_MODEL_NAME:-qwen3-8-27b-int4}"
@@ -42,7 +43,7 @@ MCP_SERVER_NAME="${RHOAI_OPENSHIFT_MCP_NAME:-openshift-mcp}"
 MCP_CONFIGMAP="${RHOAI_OPENSHIFT_MCP_CONFIGMAP:-openshift-mcp-config}"
 MCP_DISCOVERY_CONFIGMAP="${RHOAI_MCP_DISCOVERY_CONFIGMAP:-gen-ai-aa-mcp-servers}"
 MCP_DISCOVERY_KEY="${RHOAI_OPENSHIFT_MCP_DISCOVERY_KEY:-OpenShift-MCP}"
-MCP_IMAGE="${RHOAI_OPENSHIFT_MCP_IMAGE:-quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server:latest}"
+MCP_IMAGE="${RHOAI_OPENSHIFT_MCP_IMAGE:-quay.io/containers/kubernetes_mcp_server:latest}"
 PLAYGROUND_VLLM_MAX_TOKENS="${RHOAI_PLAYGROUND_VLLM_MAX_TOKENS:-512}"
 # Keep the dashboard-generated provider id stable while changing the provider
 # implementation to remote::openai. The generated provider number can change
@@ -677,9 +678,9 @@ DSC_MAAS=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.kserv
 [[ "$DSC_MAAS" == "Managed" ]] && R="pass" || R="modelsAsService=${DSC_MAAS:-not found}"
 check "DataScienceCluster MaaS is Managed" "$R"
 
-DSC_LLAMA=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.llamastackoperator.managementState}")
-[[ "$DSC_LLAMA" == "Managed" ]] && R="pass" || R="llamastackoperator=${DSC_LLAMA:-not found}"
-check "DataScienceCluster Llama Stack Operator is Managed" "$R"
+DSC_OGX=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.ogx.managementState}")
+[[ "$DSC_OGX" == "Managed" ]] && R="pass" || R="ogx=${DSC_OGX:-not found}"
+check "DataScienceCluster OGX is Managed" "$R"
 
 for flag in modelAsService vLLMDeploymentOnMaaS genAiStudio maasAuthPolicies observabilityDashboard; do
   value=$(jsonpath "odhdashboardconfig/odh-dashboard-config" "redhat-ods-applications" "{.spec.dashboardConfig.${flag}}")
@@ -792,32 +793,46 @@ fi
 check "maas-db-config secret points at the MaaS database namespace" "$R"
 
 if resource_exists "secret/${OPENAI_PROVIDER_SECRET}" "$MAAS_NS"; then
-  OPENAI_SECRET_LABEL=$(jsonpath "secret/${OPENAI_PROVIDER_SECRET}" "$MAAS_NS" "{.metadata.labels.inference\\.networking\\.k8s\\.io/bbr-managed}")
+  OPENAI_SECRET_LABEL=$(jsonpath "secret/${OPENAI_PROVIDER_SECRET}" "$MAAS_NS" "{.metadata.labels.inference\\.llm-d\\.ai/ipp-managed}")
   if oc get "secret/${OPENAI_PROVIDER_SECRET}" -n "$MAAS_NS" -o jsonpath='{.data}' \
     --insecure-skip-tls-verify=true 2>/dev/null | grep -q 'api-key' &&
     [[ "$OPENAI_SECRET_LABEL" == "true" ]]; then
     R="pass"
   else
-    R="missing data key api-key or inference.networking.k8s.io/bbr-managed=true label"
+    R="missing data key api-key or inference.llm-d.ai/ipp-managed=true label"
   fi
 else
   R="missing"
 fi
-check "OpenAI provider Secret present with api-key data key and BBR label" "$R"
+check "OpenAI provider Secret present with api-key data key and IPP label" "$R"
+
+if resource_exists "secret/${ANTHROPIC_PROVIDER_SECRET}" "$MAAS_NS"; then
+  ANTHROPIC_SECRET_LABEL=$(jsonpath "secret/${ANTHROPIC_PROVIDER_SECRET}" "$MAAS_NS" "{.metadata.labels.inference\\.llm-d\\.ai/ipp-managed}")
+  if oc get "secret/${ANTHROPIC_PROVIDER_SECRET}" -n "$MAAS_NS" -o jsonpath='{.data}' \
+    --insecure-skip-tls-verify=true 2>/dev/null | grep -q 'api-key' &&
+    [[ "$ANTHROPIC_SECRET_LABEL" == "true" ]]; then
+    R="pass"
+  else
+    R="missing data key api-key or inference.llm-d.ai/ipp-managed=true label"
+  fi
+else
+  R="missing"
+fi
+check "Anthropic provider Secret present with api-key data key and IPP label" "$R"
 
 if resource_exists "secret/redhat-models-provider-api-key" "$MAAS_NS"; then
-  REDHAT_SECRET_LABEL=$(jsonpath "secret/redhat-models-provider-api-key" "$MAAS_NS" "{.metadata.labels.inference\\.networking\\.k8s\\.io/bbr-managed}")
+  REDHAT_SECRET_LABEL=$(jsonpath "secret/redhat-models-provider-api-key" "$MAAS_NS" "{.metadata.labels.inference\\.llm-d\\.ai/ipp-managed}")
   if oc get "secret/redhat-models-provider-api-key" -n "$MAAS_NS" -o jsonpath='{.data}' \
     --insecure-skip-tls-verify=true 2>/dev/null | grep -q 'api-key' &&
     [[ "$REDHAT_SECRET_LABEL" == "true" ]]; then
     R="pass"
   else
-    R="missing data key api-key or inference.networking.k8s.io/bbr-managed=true label"
+    R="missing data key api-key or inference.llm-d.ai/ipp-managed=true label"
   fi
 else
   R="missing"
 fi
-check "Red Hat internal models provider Secret present with api-key data key and BBR label" "$R"
+check "Red Hat internal models provider Secret present with api-key data key and IPP label" "$R"
 
 if resource_exists "rolebinding/rhods-admins-maas-admin" "$MAAS_NS"; then
   R="pass"
@@ -967,13 +982,15 @@ registry_deployment_link() {
 check "Qwen27B service is linked to its model-registry card" "$(registry_deployment_link "$QWEN27B_MODEL_RESOURCE")"
 check "Qwen3.8 INT4 service is linked to its model-registry card" "$(registry_deployment_link "$QWEN38_MODEL_RESOURCE")"
 
-for ext_model in gpt-4o-mini:api.openai.com:openai-provider-api-key; do
-  IFS=: read -r EXT_NAME EXT_ENDPOINT EXT_SECRET <<< "$ext_model"
-  EXT_PROVIDER=$(jsonpath "externalmodels.maas.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.provider}")
-  EXT_EP=$(jsonpath "externalmodels.maas.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.endpoint}")
-  EXT_TARGET=$(jsonpath "externalmodels.maas.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.targetModel}")
-  EXT_CRED=$(jsonpath "externalmodels.maas.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.credentialRef.name}")
-  if [[ "$EXT_PROVIDER" == "openai" && "$EXT_EP" == "$EXT_ENDPOINT" && "$EXT_TARGET" == "$EXT_NAME" && "$EXT_CRED" == "$EXT_SECRET" ]]; then
+for ext_model in \
+  "gpt-4o-mini:openai:api.openai.com:openai-provider-api-key" \
+  "claude-sonnet-5:anthropic:api.anthropic.com:anthropic-provider-api-key"; do
+  IFS=: read -r EXT_NAME EXT_PROVIDER_EXPECTED EXT_ENDPOINT EXT_SECRET <<< "$ext_model"
+  EXT_PROVIDER=$(jsonpath "externalproviders.inference.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.provider}")
+  EXT_EP=$(jsonpath "externalproviders.inference.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.endpoint}")
+  EXT_TARGET=$(jsonpath "externalmodels.inference.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.externalProviderRefs[0].targetModel}")
+  EXT_CRED=$(jsonpath "externalproviders.inference.opendatahub.io/${EXT_NAME}" "$MAAS_NS" "{.spec.auth.secretRef.name}")
+  if [[ "$EXT_PROVIDER" == "$EXT_PROVIDER_EXPECTED" && "$EXT_EP" == "$EXT_ENDPOINT" && "$EXT_TARGET" == "$EXT_NAME" && "$EXT_CRED" == "$EXT_SECRET" ]]; then
     R="pass"
   else
     R="provider=${EXT_PROVIDER:-missing},endpoint=${EXT_EP:-missing},target=${EXT_TARGET:-missing},secret=${EXT_CRED:-missing}"
@@ -1049,8 +1066,9 @@ GATEWAY_LOG_ERRORS=$(oc logs -n openshift-ingress \
   --since=3m --tail=500 --insecure-skip-tls-verify=true 2>/dev/null \
   | grep -E 'allow_on_headers_stop_iteration|Proto constraint validation failed|unknown field|Error adding/updating listener' \
   || true)
-OPENAI_AUTH_ENFORCED=$(jsonpath "authpolicy/maas-auth-gpt-4o-mini" "$MAAS_NS" "{.status.conditions[?(@.type==\"Enforced\")].status}")
-QWEN27B_AUTH_ENFORCED=$(jsonpath "authpolicy/maas-auth-qwen3-6-27b" "$MAAS_NS" "{.status.conditions[?(@.type==\"Enforced\")].status}")
+GATEWAY_AUTH_ENFORCED=$(jsonpath "authpolicy/maas-gateway-auth" "openshift-ingress" "{.status.conditions[?(@.type==\"Enforced\")].status}")
+OPENAI_AUTH_ENFORCED="$GATEWAY_AUTH_ENFORCED"
+QWEN27B_AUTH_ENFORCED="$GATEWAY_AUTH_ENFORCED"
 OPENAI_TRLP_ENFORCED=$(jsonpath "tokenratelimitpolicy/maas-trlp-gpt-4o-mini" "$MAAS_NS" "{.status.conditions[?(@.type==\"Enforced\")].status}")
 QWEN27B_TRLP_ENFORCED=$(jsonpath "tokenratelimitpolicy/maas-trlp-qwen3-6-27b" "$MAAS_NS" "{.status.conditions[?(@.type==\"Enforced\")].status}")
 if [[ -n "$GATEWAY_LOG_ERRORS" ]]; then

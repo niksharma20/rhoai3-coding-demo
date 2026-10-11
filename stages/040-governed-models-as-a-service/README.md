@@ -4,9 +4,9 @@
 
 Enterprise AI teams need to turn model endpoints into governed platform services. A raw inference URL is difficult to share safely: it lacks subscription boundaries, API key lifecycle management, user-facing model discovery, usage reporting, and consistent controls across local and external models.
 
-Models-as-a-Service (MaaS) adds that product layer. In this demo it publishes two private local models — `qwen3-6-27b` (Qwen3.6 27B FP8: benchmark-selected for tool-calling reliability, agentic planning, and top-tier coding, 131K deployed context, kept as the selectable alternate for Kilo, OpenCode, and Hermes) and `qwen3-8-27b-int4` (Qwen3.8 27B INT4, pinned Hugging Face revision `7fb3aaca2d21c0db4716572945208db40cef9966`, text-only, retained context 262144) — plus an external OpenAI `gpt-4o-mini` provider model as managed AI assets that can be discovered, subscribed to, monitored, and consumed through OpenAI-compatible APIs. Each private model requests one L40S. Stage 020 disables GPU time-slicing so a 1-GPU request means an exclusive card — two vLLM runtimes cannot share one card's memory, hardware profiles have no affinity concept, and the KServe webhook strips template-level anti-affinity on RHOAI 3.4, so full-card requests are the placement mechanism. Client defaults in stages 050-080 use `qwen3-8-27b-int4`, and `qwen3-6-27b` stays selectable.
+Models-as-a-Service (MaaS) adds that product layer. In this demo it publishes two private local models — `qwen3-6-27b` (Qwen3.6 27B FP8: benchmark-selected for tool-calling reliability, agentic planning, and top-tier coding, 131K deployed context, kept as the selectable alternate for Kilo, OpenCode, and Hermes) and `qwen3-8-27b-int4` (Qwen3.8 27B INT4, pinned Hugging Face revision `7fb3aaca2d21c0db4716572945208db40cef9966`, text-only, retained context 262144) — plus external provider models OpenAI `gpt-4o-mini` and Anthropic `claude-sonnet-5` as managed AI assets that can be discovered, subscribed to, monitored, and consumed through OpenAI-compatible APIs. Each private model requests one L40S. Stage 020 disables GPU time-slicing so a 1-GPU request means an exclusive card — two vLLM runtimes cannot share one card's memory, hardware profiles have no affinity concept, and the KServe webhook strips template-level anti-affinity, so full-card requests are the placement mechanism. Client defaults in stages 050-080 use `qwen3-8-27b-int4`, and `qwen3-6-27b` stays selectable.
 
-`qwen3-8-27b-int4` is not a Red Hat validated model. The Red Hat AI validated-model matrix reviewed on 2026-09-22 does not list `RedHatAI/Qwen3.8-27B-INT4` and does not publish an OCI modelcar for it. The service uses the installed RHOAI 3.4 `LLMInferenceService` path and the operator vLLM runtime, with the documented `hf://` URI because no matching official OCI artifact exists. A successful local response shows compatibility with that installed runtime. It is not Red Hat model validation. The closest matrix entry, `RedHatAI/Qwen3.6-27B-FP8`, is validated for vLLM v0.21.0, RHOAI 3.5.0-ea.2, and 8x H100, which is a different combination from this cluster's RHOAI 3.4.4, vLLM 0.18.0, and single L40S. llm-d well-lit paths for RHOAI 3.4 likewise list H100, H200, B200, and A100 rather than L40S. Single-GPU `LLMInferenceService` on L40S is this repository's existing serving pattern.
+`qwen3-8-27b-int4` is not a Red Hat validated model. The Red Hat AI validated-model matrix reviewed on 2026-09-22 does not list `RedHatAI/Qwen3.8-27B-INT4` and does not publish an OCI modelcar for it. The service uses the installed RHOAI 3.5 `LLMInferenceService` path and the operator vLLM runtime, with the documented `hf://` URI because no matching official OCI artifact exists. A successful local response shows compatibility with that installed runtime. It is not Red Hat model validation. The closest matrix entry, `RedHatAI/Qwen3.6-27B-FP8`, is validated for vLLM v0.21.0, RHOAI 3.5.0-ea.2, and 8x H100, which is a different combination from this cluster's RHOAI 3.5, vLLM from that release, and single L40S. llm-d well-lit paths for RHOAI 3.4 likewise list H100, H200, B200, and A100 rather than L40S. Single-GPU `LLMInferenceService` on L40S is this repository's existing serving pattern.
 
 ## Architecture
 
@@ -14,6 +14,7 @@ Models-as-a-Service (MaaS) adds that product layer. In this demo it publishes tw
 flowchart LR
   previous["Stage 030: vLLM baseline"] --> maas["RHOAI MaaS"]
   openai["OpenAI gpt-4o-mini"] --> maas
+  claude["Anthropic claude-sonnet-5"] --> maas
   maas --> sub["MaaS subscriptions"]
   maas --> auth["MaaS auth policies"]
   maas --> keys["API keys"]
@@ -44,7 +45,7 @@ This stage turns model endpoints into governed platform services with subscripti
 
 - MaaS prerequisites: cert-manager (hard prerequisite), Leader Worker Set Operator, Red Hat Connectivity Link v1.3.5, PostgreSQL database, Kuadrant configure Job, `kuadrant-console-plugin` enablement (sync-wave 14) for Connectivity Link gateway and policy visibility in the OpenShift web console.
 - Local model migration: the `LLMInferenceService` for Qwen3.6 27B in `models-as-a-service` (a second-model workshop overlay exists under `local-models/optional/`), plus a separate `qwen3-8-27b-int4` service, replacing the Stage 030 baseline `InferenceService`. Qwen 3.6 serving flags follow the official vLLM Qwen3.6-27B recipe with Tool Calling and Text Only enabled (`--reasoning-parser qwen3`, `--enable-auto-tool-choice`, `--tool-call-parser qwen3_xml`, `--language-model-only`). Qwen 3.8 uses the same parsers and text-only mode, with its own [recommended non-thinking sampling](https://huggingface.co/Qwen/Qwen3.8-27B#best-practices): `temperature` 0.7, `top_p` 0.8, `top_k` 20, `min_p` 0.0, `presence_penalty` 1.5, `repetition_penalty` 1.0. Its server defaults to `enable_thinking: false`; Hermes also sends explicit per-run sampling and mode. Qwen 3.8 adds FP8 KV cache and `--mamba-cache-mode=align`. Speculative decoding stays off.
-- External model publication: OpenAI `gpt-4o-mini` as a governed MaaS model with credential-gated provider key.
+- External model publication: OpenAI `gpt-4o-mini` and Anthropic `claude-sonnet-5` as governed MaaS models. Each uses a credential-gated provider key. The gateway translates OpenAI-style chat requests to Anthropic's Messages API.
 - Subscription and authorization policies with per-model token rate limits for developer and burst workloads.
 - Gateway hostname patched to `maas.<ingress-domain>` via hook Job at deploy time with TLS from the cluster ingress certificate.
 - vLLM PrometheusRule: recording rules for TTFT/ITL p95 and KV-cache utilization, plus serving-health alerts.
@@ -62,7 +63,7 @@ Stage 040 is the governance control point for all model consumption that follows
 | Name | Owners | Models (limit/1h) | Priority | Purpose |
 |------|--------|-------------------|----------|---------|
 | `devspaces-coding-models` | SA `devspace-maas-key-provisioner` | qwen3-6-27b @20M/1h, qwen3-8-27b-int4 @20M/1h | 100 | Dev Spaces workspaces (Kilo Code / OpenCode). Default client model is qwen3-8-27b-int4; qwen3-6-27b stays selectable |
-| `personal-kube-admin` / `personal-ai-developer` / `personal-ai-admin` | one user each | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K | **150** | Interactive/Playground — wins user-token selection |
+| `personal-kube-admin` / `personal-ai-developer` / `personal-ai-admin` | one user each | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K, claude-sonnet-5 @100K | **150** | Interactive/Playground — wins user-token selection |
 
 Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-hub-models`, `model-evaluation`, `ai-safety-guardrails`. The last three had no API keys and no running consumer. `ai-admin` and `ai-developer` keep access through their personal subscriptions.
 
@@ -73,7 +74,7 @@ Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-
 - **OpenShift MCP bounded access.** The MCP server uses HTTP rate limiting (2 rps / burst 4) and enables only three tools: `pods_list_in_namespace`, `pods_get`, `nodes_top`. It denies Secret, ConfigMap, and RBAC resource access.
 - **Optional MCP servers.** Slack and BrightData deployments run at replicas 0 and activate only when `SLACK_BOT_TOKEN` / `BRIGHTDATA_API_TOKEN` are set. Both use SSE transport on port 8080.
 
-**Red Hat internal external models:** `qwen3-235b` (16K context) and `minimax-m2` (196K context) are published as governed MaaS models via a LiteLLM proxy at `maas-rhdp.apps.maas.redhatworkshops.io`. One shared API key (`.env` `REDHAT_MODELS_API_KEY` → Secret `redhat-models-provider-api-key`, `inference.networking.k8s.io/bbr-managed=true` label) authenticates both models. The MaaS integration uses the `ExternalModel` + `MaaSModelRef` pattern so both models appear in subscriptions and the Playground alongside the local models and gpt-4o-mini.
+**Red Hat internal external models:** `qwen3-235b` (16K context) and `minimax-m2` (196K context) are published as governed MaaS models via a LiteLLM proxy at `maas-rhdp.apps.maas.redhatworkshops.io`. One shared API key (`.env` `REDHAT_MODELS_API_KEY` → Secret `redhat-models-provider-api-key`, `inference.llm-d.ai/ipp-managed=true` label) authenticates both models. The MaaS integration uses the `ExternalModel` + `MaaSModelRef` pattern so both models appear in subscriptions and the Playground alongside the local models and gpt-4o-mini.
 
 **Visibility semantics:** what a user sees in the MaaS dashboard = what their own subscriptions authorize. Admin users (kube:admin) may see grayed-out subscription links for SA-owned subscriptions (like `devspaces-coding-models`); this is correct behavior — the admin is not an owner of that subscription.
 
@@ -83,7 +84,7 @@ Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-
 
 Red Hat OpenShift AI MaaS provides subscription-based model governance: model publication, API key lifecycle, authorization policies, token rate limits, and usage telemetry — all scoped through the `maas.opendatahub.io/v1alpha1` API. Red Hat Connectivity Link and Kuadrant handle gateway policy enforcement, rate limiting through Limitador, and authentication through Authorino. Gateway API provides the ingress data plane. vLLM serves the local models through KServe InferenceServices backed by LLMInferenceService resources, with the Leader Worker Set Operator as a distributed-inference prerequisite. PostgreSQL stores the MaaS API key lifecycle state.
 
-The Gen AI Playground (Llama Stack Operator) provides the user-facing model interaction surface. The OpenShift MCP Server adds bounded read-only cluster context as a registered tool.
+The Gen AI Playground uses the OGX Operator, the OpenShift AI 3.5 name for the Llama Stack runtime. OGX is Technology Preview. It is the API layer a playground uses to talk to models, tools, and retrieval. It does not serve the model weights itself. The OpenShift MCP Server adds bounded read-only cluster context as a registered tool.
 
 ## Trust Boundaries
 
@@ -106,7 +107,7 @@ The Gen AI Playground (Llama Stack Operator) provides the user-facing model inte
 - [Kuadrant](https://kuadrant.io/) provides policy-based API management for rate limiting and authentication.
 - [Authorino](https://github.com/Kuadrant/authorino) is the external authorization service in the gateway policy chain.
 - [Limitador](https://github.com/Kuadrant/limitador) is the rate-limiting engine enforcing token quotas.
-- [OpenShift MCP Server](https://github.com/openshift/openshift-mcp-server) provides read-only cluster context as an MCP tool server.
+- [OpenShift MCP Server](https://github.com/openshift/openshift-mcp-server) provides read-only cluster context as an MCP tool server. The pod runs the public `quay.io/containers/kubernetes_mcp_server` image because the OpenShift fork's published image is a private Konflux repository.
 - [Leader Worker Set](https://github.com/kubernetes-sigs/lws) is the distributed-inference scheduling prerequisite.
 
 ## Qwen 3.8 next to Qwen 3.6
@@ -176,8 +177,8 @@ Prerequisites: cert-manager must be installed before deploy.sh runs (the script 
 
 | Resource | Link |
 |----------|------|
-| RHOAI 3.4 — Govern LLM access with MaaS | https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/govern_llm_access_with_models-as-a-service/index |
-| RHOAI 3.4 — Authentication for llm-d using RHCL | https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html/deploy_models_using_distributed_inference_with_llm-d/configuring-authentication-for-llmd_distributed-inference |
+| RHOAI 3.5 — Govern LLM access with MaaS | https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html-single/govern_llm_access_with_models-as-a-service/index |
+| RHOAI 3.5 — Authentication for llm-d using RHCL | https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/deploy_models_using_distributed_inference_with_llm-d/configuring-authentication-for-llmd_distributed-inference |
 | Red Hat Connectivity Link 1.3 — Installing | https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3/html-single/installing_connectivity_link/index |
 | OCP 4.20 — Leader Worker Set Operator | https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/ai_workloads/leader-worker-set-operator |
 | OCP 4.20 — cert-manager Operator | https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/security_and_compliance/cert-manager-operator-for-red-hat-openshift |

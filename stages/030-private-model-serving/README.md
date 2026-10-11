@@ -88,7 +88,7 @@ Red Hat OpenShift AI provides the KServe model serving platform as a managed com
 
 | Product | Version/Channel |
 |---------|-----------------|
-| Red Hat OpenShift AI Self-Managed | stable-3.4 (KServe, Model Registry) |
+| Red Hat OpenShift AI Self-Managed | stable-3.5 (KServe, Model Registry) |
 | Red Hat OpenShift Container Platform | 4.20 (user workload monitoring, Alertmanager) |
 
 ## Open Source Projects To Know
@@ -121,9 +121,9 @@ The deploy script uses an idempotent discover-or-create flow: it checks for exis
 
 | Source | Role |
 |--------|------|
-| [RHOAI 3.4 - Configuring model-serving platform](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/configuring_your_model-serving_platform/index) | KServe, ServingRuntime platform enablement |
-| [RHOAI 3.4 - Deploying models](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/deploying_models/index) | Model deployment and OCI modelcar pattern |
-| [RHOAI 3.4 - Managing model registries](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/managing_model_registries/index) | Registry provisioning and access |
+| [RHOAI 3.5 - Configuring model-serving platform](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html-single/configuring_your_model-serving_platform/index) | KServe, ServingRuntime platform enablement |
+| [RHOAI 3.5 - Deploying models](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html-single/deploying_models/index) | Model deployment and OCI modelcar pattern |
+| [RHOAI 3.5 - Managing model registries](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html-single/managing_model_registries/index) | Registry provisioning and access |
 | [Red Hat Developer - GuideLLM](https://developers.redhat.com/articles/2025/06/20/guidellm-evaluate-llm-deployments-real-world-inference) | Benchmark methodology and workload-shaped testing |
 | [Red Hat Developer - Why vLLM](https://developers.redhat.com/articles/2025/10/30/why-vllm-best-choice-ai-inference-today) | vLLM value and OpenShift AI integration |
 | [OCP 4.20 - Monitoring](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/monitoring/index) | User workload monitoring and Alertmanager |

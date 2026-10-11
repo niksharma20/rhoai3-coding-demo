@@ -491,7 +491,7 @@ The `private-model-serving-gpu` `ClusterQueue` is intentionally small: two NVIDI
 
 OpenShift Custom Metrics Autoscaler/KEDA is installed as a building block only. The stage does not attach `ScaledObject` resources to the private model deployments in the first pass. Production patterns should base scaling on validated Prometheus, Kueue backlog, or idle workload metrics.
 
-Stage 010 still owns the base `DataScienceCluster` and dashboard resources. Its Argo CD Application ignores only the Kueue handoff fields so Stage 020 can enable the Red Hat OpenShift AI 3.4 external Kueue integration without making Stage 010 depend on Kueue being installed first. Stage 020 also owns the `maas` namespace now because the `LocalQueue` must exist before Stage 030 creates model-serving resources in that project.
+Stage 010 still owns the base `DataScienceCluster` and dashboard resources. Its Argo CD Application ignores only the Kueue handoff fields so Stage 020 can enable the Red Hat OpenShift AI 3.5 external Kueue integration without making Stage 010 depend on Kueue being installed first. Stage 020 also owns the `maas` namespace now because the `LocalQueue` must exist before Stage 030 creates model-serving resources in that project.
 
 Useful checks:
 
@@ -525,13 +525,13 @@ oc get job model-registry-seed -n rhoai-model-registries
 
 ### Stage 040
 
-Stage 040 deploys the governed Models-as-a-Service control point around the Red Hat OpenShift AI 3.4 MaaS controller and API: Gateway API, Red Hat Connectivity Link, Kuadrant, Authorino, the shared demo consumer subscription, token limits, and tenant telemetry.
+Stage 040 deploys the governed Models-as-a-Service control point around the Red Hat OpenShift AI 3.5 MaaS controller and API: Gateway API, Red Hat Connectivity Link, Kuadrant, Authorino, the shared demo consumer subscription, token limits, and tenant telemetry.
 
-RHOAI 3.4 owns the MaaS controller and `maas-api` deployments. Do not reintroduce the previous upstream `maas-controller` deployment or `maas-api` image override: those pre-3.4 workarounds conflict with the operator-owned selectors, RBAC, CRDs, and images. GitOps should manage only demo MaaS model references, access policies, subscriptions, gateway policy, observability helpers, and validation jobs unless product documentation and live schema checks require otherwise.
+RHOAI 3.5 owns the MaaS controller and `maas-api` deployments. Do not reintroduce the previous upstream `maas-controller` deployment or `maas-api` image override: those pre-3.4 workarounds conflict with the operator-owned selectors, RBAC, CRDs, and images. GitOps should manage only demo MaaS model references, access policies, subscriptions, gateway policy, observability helpers, and validation jobs unless product documentation and live schema checks require otherwise.
 
-RHOAI 3.4 uses MaaS subscriptions instead of the 3.3 tier model. The active GitOps path no longer creates `tier-to-group-mapping`, `tier-*` groups, tier ServiceAccount RBAC, or tier-shaped dashboard metrics. Access is granted to the demo OpenShift groups through `MaaSAuthPolicy`, quota and token limits are set through `MaaSSubscription`, and telemetry is enabled on `Tenant/default-tenant`.
+RHOAI 3.5 uses MaaS subscriptions instead of the 3.3 tier model. The active GitOps path no longer creates `tier-to-group-mapping`, `tier-*` groups, tier ServiceAccount RBAC, or tier-shaped dashboard metrics. Access is granted to the demo OpenShift groups through `MaaSAuthPolicy`, quota and token limits are set through `MaaSSubscription`, and telemetry is enabled on `Tenant/default-tenant`.
 
-Stage 040 validation runs a short GuideLLM load test when a MaaS API key is available. Red Hat OpenShift AI 3.4 lists GuideLLM support through the Evaluation Stack control plane as a Developer Preview capability; this demo currently uses the upstream GuideLLM container directly to generate repeatable load against the MaaS OpenAI-compatible endpoint. Results are stored as `ConfigMap` objects in the `maas` namespace with names beginning `guidellm-`.
+Stage 040 validation runs a short GuideLLM load test when a MaaS API key is available. Red Hat OpenShift AI 3.5 lists GuideLLM support through the Evaluation Stack control plane as a Developer Preview capability; this demo currently uses the upstream GuideLLM container directly to generate repeatable load against the MaaS OpenAI-compatible endpoint. Results are stored as `ConfigMap` objects in the `maas` namespace with names beginning `guidellm-`.
 
 The Gen AI Playground token path uses the dashboard BFF to request a MaaS token, then passes that token to Llama Stack as request provider data. Llama Stack's `remote::vllm` provider gives that request token precedence over provider-specific environment tokens. To keep one Playground usable with private and approved external MaaS models, the demo uses one consumer subscription named `demo-models-subscription`. Stage 040 creates it with private model refs and expands it after the approved external `MaaSModelRef` resources are Ready. Product MaaS API key creation is validated through `/maas-api/v1/api-keys`.
 
@@ -586,17 +586,23 @@ External models share MaaS governance, subscription, API-key, rate-limit, token-
 
 | `.env` variable | Secret created | Namespace | Purpose |
 |----------------|----------------|-----------|---------|
-| `OPENAI_API_KEY` | `openai-api-key` | `maas` | Credential injection for external models (gpt-4o, gpt-4o-mini) |
+| `OPENAI_API_KEY` | `openai-provider-api-key` | `models-as-a-service` | Credential injection for `gpt-4o-mini` |
+| `ANTHROPIC_API_KEY` | `anthropic-provider-api-key` | `models-as-a-service` | Credential injection for `claude-sonnet-5` |
 
 The Argo CD Application has `ignoreDifferences` configured for these Secrets so `selfHeal` does not revert provisioned values to the GitOps placeholder.
 
 If you need to update a credential after initial deployment:
 
 ```bash
-oc create secret generic openai-api-key -n maas \
+oc create secret generic openai-provider-api-key -n models-as-a-service \
     --from-literal=api-key="sk-proj-YOUR-KEY" \
     --dry-run=client -o yaml | oc apply -f -
-oc label secret openai-api-key -n maas inference.networking.k8s.io/bbr-managed=true --overwrite
+oc label secret openai-provider-api-key -n models-as-a-service inference.llm-d.ai/ipp-managed=true --overwrite
+
+oc create secret generic anthropic-provider-api-key -n models-as-a-service \
+    --from-literal=api-key="sk-ant-YOUR-KEY" \
+    --dry-run=client -o yaml | oc apply -f -
+oc label secret anthropic-provider-api-key -n models-as-a-service inference.llm-d.ai/ipp-managed=true --overwrite
 ```
 
 Useful checks:
@@ -794,7 +800,7 @@ Or: `git push origin main:golden --force`.
 
 ## Qwen 3.8 INT4 alongside Qwen 3.6
 
-`qwen3-8-27b-int4` is a second governed local model. It is not a Red Hat validated model. The validated-model matrix reviewed on 2026-09-22 has no `RedHatAI/Qwen3.8-27B-INT4` entry and no modelcar. The service runs on the installed RHOAI 3.4 operator vLLM through `hf://RedHatAI/Qwen3.8-27B-INT4:7fb3aaca2d21c0db4716572945208db40cef9966`. Recorded runtime image: `registry.redhat.io/rhaii/vllm-cuda-rhel9@sha256:dd65c7ed88a9369b962f1299ed19c6c8819ff0a64595c10e32f1e82ab0750e27` (running image ID `sha256:d2ed07d307845135c089bc7644b64734b9349d517abf746c9aa0aa23ed263da5`, vLLM `0.18.0+rhaiv.14`). The retained context is `--max-model-len=262144`. A 246077-token needle recall passed with a 512-token output reserve. A 128-token cap failed that shape at 222077 tokens. Stage 040's README has the comparison with Qwen 3.6.
+`qwen3-8-27b-int4` is a second governed local model. It is not a Red Hat validated model. The validated-model matrix reviewed on 2026-09-22 has no `RedHatAI/Qwen3.8-27B-INT4` entry and no modelcar. The service runs on the installed RHOAI 3.5 operator vLLM through `hf://RedHatAI/Qwen3.8-27B-INT4:7fb3aaca2d21c0db4716572945208db40cef9966`. Recorded runtime image: `registry.redhat.io/rhaii/vllm-cuda-rhel9@sha256:dd65c7ed88a9369b962f1299ed19c6c8819ff0a64595c10e32f1e82ab0750e27` (running image ID `sha256:d2ed07d307845135c089bc7644b64734b9349d517abf746c9aa0aa23ed263da5`, vLLM `0.18.0+rhaiv.14`). The retained context is `--max-model-len=262144`. A 246077-token needle recall passed with a 512-token output reserve. A 128-token cap failed that shape at 222077 tokens. Stage 040's README has the comparison with Qwen 3.6.
 
 Qwen 3.8's declared server defaults use its [recommended non-thinking profile](https://huggingface.co/Qwen/Qwen3.8-27B#best-practices): temperature 0.7, top_p 0.8, top_k 20, min_p 0.0, presence_penalty 1.5, repetition_penalty 1.0, and `--default-chat-template-kwargs={"enable_thinking":false}`. The Stage 050 Hermes profile explicitly supplies the same values, so each new run keeps its own sampling when server defaults change. Existing run-control profiles are not rewritten. Thinking-mode clients must explicitly set `enable_thinking: true` and the recommended thinking sampling (temperature 1.0, top_p 0.95, top_k 20, min_p 0.0, presence_penalty 0.0, repetition_penalty 1.0); changing the mode alone does not select another sampling profile.
 
@@ -885,11 +891,11 @@ overlay README). Its registry card stays active, marked
   tool calls and instruction drift in long orchestration sessions (a
   small-model failure mode; the same packet later succeeded first-pass on a
   stronger model).
-- `gemma-4-26b-a4b` — never served: the RHOAI 3.4 vLLM runtime's Transformers
+- `gemma-4-26b-a4b` — never served on the RHOAI 3.4 vLLM runtime, whose Transformers
   predates the gemma4 architecture (modelcars can publish ahead of runtime
   support — always arch-check the serving image before a swap; the vLLM
   native model registry is the authoritative gate, not transformers imports).
-  Revisit at RHOAI 3.5.
+  Not retested on the RHOAI 3.5.1 runtime.
 - `granite-4-0-h-small` — served correctly but retired on benchmarks
   (τ²-Bench 17%, AA Intelligence 11): capability, not compatibility.
 
@@ -898,9 +904,9 @@ overlay README). Its registry card stays active, marked
 **AD-008 exception**, not a factory default. Hermes registers it only when
 `.rhoai3-model-escalation.json` is valid. It is direct-endpoint only because
 the RHOAI 3.4 gateway buffers streaming for external models (see
-TROUBLESHOOTING "External Model Streaming Resets"); expected fixed in
-RHOAI 3.5, after which it can route through the gateway with platform
-telemetry like the local models. Do not add it to `fallback_providers`.
+TROUBLESHOOTING "External Model Streaming Resets"). The 3.5.1 upgrade did
+not retest that path. Keep MiniMax off the gateway until a live stream
+returns tokens incrementally. Do not add it to `fallback_providers`.
 
 **Parked serving experiments (BACKLOG):** 35B NVFP4 variant (official
 modelcar exists; blocked on vLLM #34694 — NVFP4 Marlin emulation garbles

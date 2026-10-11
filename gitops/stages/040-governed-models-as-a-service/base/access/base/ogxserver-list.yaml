@@ -1,0 +1,73 @@
+# The 3.5 Gen AI BFF allows /gen-ai/api/v1/maas/models only after a
+# SubjectAccessReview for list on ogxservers.ogx.io in the requested
+# namespace. This cluster still serves Llama Stack as
+# llamastackdistributions.llamastack.io, so edit/admin do not include
+# ogx.io and the dashboard returns 403 even when the user can list
+# Services. The CRD is absent; the review only checks the RBAC rule.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ogxserver-list
+  namespace: models-as-a-service
+  labels:
+    app.kubernetes.io/name: ogxserver-list
+    app.kubernetes.io/component: maas-access
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+  - apiGroups: ["ogx.io"]
+    resources: ["ogxservers"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rhods-admins-ogxserver-list
+  namespace: models-as-a-service
+  labels:
+    app.kubernetes.io/name: rhods-admins-ogxserver-list
+    app.kubernetes.io/component: maas-access
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ogxserver-list
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: rhods-admins
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ogxserver-list
+  namespace: demo-sandbox
+  labels:
+    app.kubernetes.io/name: ogxserver-list
+    app.kubernetes.io/component: maas-access
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+  - apiGroups: ["ogx.io"]
+    resources: ["ogxservers"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rhoai-developers-ogxserver-list
+  namespace: demo-sandbox
+  labels:
+    app.kubernetes.io/name: rhoai-developers-ogxserver-list
+    app.kubernetes.io/component: maas-access
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ogxserver-list
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: rhoai-developers

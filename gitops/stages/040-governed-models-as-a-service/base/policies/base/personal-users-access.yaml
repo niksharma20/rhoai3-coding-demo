@@ -34,6 +34,11 @@ spec:
       tokenRateLimits:
         - limit: 100000
           window: 1h
+    - name: claude-sonnet-5
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 100000
+          window: 1h
   priority: 150
   tokenMetadata:
     organizationId: rhoai3-coding-demo
@@ -66,6 +71,8 @@ spec:
       namespace: models-as-a-service
     - name: gpt-4o-mini
       namespace: models-as-a-service
+    - name: claude-sonnet-5
+      namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo
     costCenter: ai-platform
@@ -106,6 +113,11 @@ spec:
       tokenRateLimits:
         - limit: 100000
           window: 1h
+    - name: claude-sonnet-5
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 100000
+          window: 1h
   priority: 150
   tokenMetadata:
     organizationId: rhoai3-coding-demo
@@ -137,6 +149,8 @@ spec:
     - name: qwen3-8-27b-int4
       namespace: models-as-a-service
     - name: gpt-4o-mini
+      namespace: models-as-a-service
+    - name: claude-sonnet-5
       namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo
@@ -178,6 +192,11 @@ spec:
       tokenRateLimits:
         - limit: 100000
           window: 1h
+    - name: claude-sonnet-5
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 100000
+          window: 1h
   priority: 150
   tokenMetadata:
     organizationId: rhoai3-coding-demo
@@ -209,6 +228,8 @@ spec:
     - name: qwen3-8-27b-int4
       namespace: models-as-a-service
     - name: gpt-4o-mini
+      namespace: models-as-a-service
+    - name: claude-sonnet-5
       namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo

@@ -332,6 +332,16 @@ Deferred from the v13 release, still not done: one bounded diagnostic action on 
 
 Compatibility objectives (`loop.compatibility_objectives: v1`) and plan semantics v1 are selected for new runs and covered by the current tests. The measured PetClinic cases are in `tmp/v21-run/m3-partition-comparison/CASES-REPORT.md`. rgctl was not adopted.
 
+## RHOAI 3.5
+
+The demo operator channel is `stable-3.5` (`rhods-operator.3.5.1`). GitHub `main` still publishes the `stable-3.4` overlay, so the live Stage 010 Application ignores `Subscription/rhods-operator` `/spec/channel` until that overlay is pushed. Argo CD self-heal will move the channel back to `stable-3.4` if that ignore is removed first.
+
+- [x] Consecutive upgrade from `rhods-operator.3.4.4` to `rhods-operator.3.5.1` on the current sandbox, with `DataScienceCluster` staying Ready.
+- [ ] Keep Red Hat Connectivity Link on 1.3.z. RHOAI 3.5 release notes (RHOAIENG-76586) say RHCL 1.4.x breaks MaaS rate limiting. Do not approve a 1.4 InstallPlan.
+- [ ] Cluster Observability Operator stays at `cluster-observability-operator.v1.4.0` until COO 1.5 is revalidated on this 3.5 cluster.
+- [ ] Retest external-model streaming and the gemma4 runtime on 3.5.1 before changing those workarounds.
+- [ ] OGX is Technology Preview. On 3.5.1 the operator only starts it after `llamastackoperator` is `Removed`. The shipped CSV does not register `ogxs.components.platform.opendatahub.io`; that CRD is in the operator image and had to be applied before the module could be created. GitHub `main` still has the Stage 040 job set Llama Stack to `Managed`, so the next sync of that job turns OGX back off until the local job change is pushed. No `OGXServer` is deployed; a server is a project workload and needs PostgreSQL.
+
 ## RHOAI 3.4 watch items
 
 - [ ] Confirm whether governed model access, dashboard discovery, subscription assignment, API keys, quotas, rate limits, token limits and usage visibility are GA or a preview for the target release.
@@ -350,7 +360,7 @@ Compatibility objectives (`loop.compatibility_objectives: v1`) and plan semantic
 - [ ] **Perses backend NetworkPolicy, demo dashboard RBAC, Prometheus API gate, and MaaS tab labels.** Revert when the product opens the real Perses namespace and discovers the Cluster, Models and Usage tabs without demo labels.
 - [ ] **`models-as-a-service` namespace** for `MaaSAuthPolicy` and `MaaSSubscription` until the operator-owned layout is confirmed.
 - [ ] **Dashboard Route** via the `rh-ai.*` hostname through `data-science-gateway`.
-- [ ] **ExternalModel credential Secret label** `inference.networking.k8s.io/bbr-managed=true`.
+- [x] **External provider credential Secret label** `inference.llm-d.ai/ipp-managed=true` (RHOAI 3.5 payload processor). The 3.4 `inference.networking.k8s.io/bbr-managed` label is no longer what loads the key.
 - [ ] **Community Grafana CRDs** may remain after the custom Grafana stack was removed. They are not active MaaS architecture unless Grafana custom resources reappear.
 - [ ] **RHOAI monitoring service-ca Secret sync.** Stage 010 copies `ConfigMap/prometheus-web-tls-ca` into the Secret the generated `MonitoringStack` references. Remove the sync if a later build creates the Secret or points at the ConfigMap.
 

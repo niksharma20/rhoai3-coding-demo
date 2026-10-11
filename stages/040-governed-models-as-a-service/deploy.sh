@@ -65,6 +65,9 @@ PINNED_RHCL_CSV="${RHOAI_PINNED_RHCL_CSV:-rhcl-operator.v1.3.5}"
 OPENAI_MODEL_ID="${RHOAI_OPENAI_MODEL_ID:-gpt-4o-mini}"
 OPENAI_PROVIDER_SECRET="${RHOAI_OPENAI_PROVIDER_SECRET:-openai-provider-api-key}"
 OPENAI_API_KEY_VALUE="${RHOAI_OPENAI_API_KEY:-${OPENAI_API_KEY:-}}"
+ANTHROPIC_MODEL_ID="${RHOAI_ANTHROPIC_MODEL_ID:-claude-sonnet-5}"
+ANTHROPIC_PROVIDER_SECRET="${RHOAI_ANTHROPIC_PROVIDER_SECRET:-anthropic-provider-api-key}"
+ANTHROPIC_API_KEY_VALUE="${RHOAI_ANTHROPIC_API_KEY:-${ANTHROPIC_API_KEY:-}}"
 REDHAT_MODELS_API_KEY_VALUE="${RHOAI_REDHAT_MODELS_API_KEY:-${REDHAT_MODELS_API_KEY:-}}"
 REDHAT_MODELS_BASE_URL="${RHOAI_REDHAT_MODELS_BASE_URL:-${REDHAT_MODELS_BASE_URL:-}}"
 DEMO_PROJECT_NS="${RHOAI_DEMO_PROJECT_NAMESPACE:-demo-sandbox}"
@@ -262,6 +265,7 @@ ensure_openai_provider_secret() {
       demo.rhoai.io/stage=040 \
       demo.rhoai.io/provider=openai \
       inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
       --insecure-skip-tls-verify=true >/dev/null
 
     echo "✓ OpenAI provider Secret is present for ${OPENAI_MODEL_ID}"
@@ -277,6 +281,7 @@ ensure_openai_provider_secret() {
       demo.rhoai.io/stage=040 \
       demo.rhoai.io/provider=openai \
       inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
       --insecure-skip-tls-verify=true >/dev/null
     echo "✓ Existing OpenAI provider Secret found for ${OPENAI_MODEL_ID}"
     return 0
@@ -285,6 +290,51 @@ ensure_openai_provider_secret() {
   echo "ERROR: Missing OpenAI provider Secret ${OPENAI_PROVIDER_SECRET} in ${MAAS_NS}." >&2
   echo "Set OPENAI_API_KEY or RHOAI_OPENAI_API_KEY locally before deploying Stage 040 model publication." >&2
   exit 1
+}
+
+ensure_anthropic_provider_secret() {
+  echo "── Ensuring environment-local Anthropic provider Secret ──"
+
+  ensure_namespace_exists "$MAAS_NS"
+
+  if [[ -n "$ANTHROPIC_API_KEY_VALUE" ]]; then
+    oc create secret generic "$ANTHROPIC_PROVIDER_SECRET" \
+      -n "$MAAS_NS" \
+      --from-literal=api-key="$ANTHROPIC_API_KEY_VALUE" \
+      --dry-run=client -o yaml | oc apply -f - --insecure-skip-tls-verify=true >/dev/null
+
+    oc label secret "$ANTHROPIC_PROVIDER_SECRET" -n "$MAAS_NS" --overwrite \
+      app.kubernetes.io/name="$ANTHROPIC_PROVIDER_SECRET" \
+      app.kubernetes.io/component=external-model-provider \
+      app.kubernetes.io/part-of=rhoai3-coding-demo \
+      demo.rhoai.io/stage=040 \
+      demo.rhoai.io/provider=anthropic \
+      inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
+      --insecure-skip-tls-verify=true >/dev/null
+
+    echo "✓ Anthropic provider Secret is present for ${ANTHROPIC_MODEL_ID}"
+    return 0
+  fi
+
+  if oc get secret "$ANTHROPIC_PROVIDER_SECRET" -n "$MAAS_NS" \
+    --insecure-skip-tls-verify=true >/dev/null 2>&1; then
+    oc label secret "$ANTHROPIC_PROVIDER_SECRET" -n "$MAAS_NS" --overwrite \
+      app.kubernetes.io/name="$ANTHROPIC_PROVIDER_SECRET" \
+      app.kubernetes.io/component=external-model-provider \
+      app.kubernetes.io/part-of=rhoai3-coding-demo \
+      demo.rhoai.io/stage=040 \
+      demo.rhoai.io/provider=anthropic \
+      inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
+      --insecure-skip-tls-verify=true >/dev/null
+    echo "✓ Existing Anthropic provider Secret found for ${ANTHROPIC_MODEL_ID}"
+    return 0
+  fi
+
+  echo "WARNING: ANTHROPIC_API_KEY not set — ${ANTHROPIC_MODEL_ID} will register but inference calls will fail." >&2
+  echo "Set ANTHROPIC_API_KEY in .env to enable Claude." >&2
+  return 0
 }
 
 ensure_redhat_models_provider_secret() {
@@ -313,6 +363,7 @@ ensure_redhat_models_provider_secret() {
       demo.rhoai.io/stage=040 \
       demo.rhoai.io/provider=redhat-internal \
       inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
       --insecure-skip-tls-verify=true >/dev/null
 
     echo "✓ Red Hat internal models provider Secret is present"
@@ -328,6 +379,7 @@ ensure_redhat_models_provider_secret() {
       demo.rhoai.io/stage=040 \
       demo.rhoai.io/provider=redhat-internal \
       inference.networking.k8s.io/bbr-managed=true \
+      inference.llm-d.ai/ipp-managed=true \
       --insecure-skip-tls-verify=true >/dev/null
     echo "✓ Existing Red Hat internal models provider Secret found"
     return 0
@@ -487,6 +539,7 @@ ensure_optional_mcp_secrets() {
 }
 
 ensure_openai_provider_secret
+ensure_anthropic_provider_secret
 ensure_redhat_models_provider_secret
 ensure_optional_mcp_secrets
 "$SCRIPT_DIR/register-model-cards.sh"
@@ -526,9 +579,9 @@ wait_for_jsonpath "DataScienceCluster MaaS management" \
   "datasciencecluster/default-dsc" "" \
   "{.spec.components.kserve.modelsAsService.managementState}" "Managed" 60
 
-wait_for_jsonpath "DataScienceCluster Llama Stack Operator management" \
+wait_for_jsonpath "DataScienceCluster OGX management" \
   "datasciencecluster/default-dsc" "" \
-  "{.spec.components.llamastackoperator.managementState}" "Managed" 60
+  "{.spec.components.ogx.managementState}" "Managed" 60
 
 wait_for_jsonpath "MaaS PostgreSQL StatefulSet availability" \
   "statefulset/maas-postgres" "$MAAS_DB_NS" \

@@ -31,7 +31,10 @@ spec:
           type: RuntimeDefault
       containers:
         - name: openshift-mcp
-          image: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server:latest
+          # Public upstream image. The OpenShift fork chart publishes
+          # quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server,
+          # which is a private Konflux repository and cannot be pulled here.
+          image: quay.io/containers/kubernetes_mcp_server:latest
           imagePullPolicy: IfNotPresent
           args:
             - --config

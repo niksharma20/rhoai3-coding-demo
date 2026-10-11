@@ -68,3 +68,51 @@ spec:
         - /metadata/labels/modelregistry.opendatahub.io~1name
         - /metadata/labels/modelregistry.opendatahub.io~1registered-model-id
         - /metadata/labels/modelregistry.opendatahub.io~1model-version-id
+    # Local Claude access is applied on this machine and is not in the Git
+    # revision Argo CD syncs. Ignore the personal model lists so selfHeal
+    # does not remove claude-sonnet-5.
+    - group: maas.opendatahub.io
+      kind: MaaSSubscription
+      name: personal-kube-admin
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    - group: maas.opendatahub.io
+      kind: MaaSAuthPolicy
+      name: personal-kube-admin
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    - group: maas.opendatahub.io
+      kind: MaaSSubscription
+      name: personal-ai-developer
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    - group: maas.opendatahub.io
+      kind: MaaSAuthPolicy
+      name: personal-ai-developer
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    - group: maas.opendatahub.io
+      kind: MaaSSubscription
+      name: personal-ai-admin
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    - group: maas.opendatahub.io
+      kind: MaaSAuthPolicy
+      name: personal-ai-admin
+      namespace: models-as-a-service
+      jsonPointers:
+        - /spec/modelRefs
+    # GitHub main still publishes the private Konflux MCP image. Keep the
+    # public image until that manifest is pushed, or selfHeal pulls the
+    # private tag back and the pod stays ImagePullBackOff.
+    - group: apps
+      kind: Deployment
+      name: openshift-mcp
+      namespace: rhoai-mcp
+      jsonPointers:
+        - /spec/template/spec/containers/0/image

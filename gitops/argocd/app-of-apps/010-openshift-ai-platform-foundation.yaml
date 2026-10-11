@@ -46,6 +46,16 @@ spec:
         - /spec/components/kueue
         - /spec/components/kserve
         - /spec/components/llamastackoperator
+        - /spec/components/ogx
         - /spec/components/aipipelines
         - /spec/components/trustyai
         - /spec/components/mlflowoperator
+    # The live subscription channel is held at stable-3.5 on this cluster.
+    # GitHub main still publishes stable-3.4 until this overlay is pushed, so
+    # selfHeal must not move the channel back.
+    - group: operators.coreos.com
+      kind: Subscription
+      name: rhods-operator
+      namespace: redhat-ods-operator
+      jsonPointers:
+        - /spec/channel

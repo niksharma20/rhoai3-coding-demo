@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - openai-gpt-4o-mini.yaml
+  - anthropic-claude-sonnet-5.yaml
