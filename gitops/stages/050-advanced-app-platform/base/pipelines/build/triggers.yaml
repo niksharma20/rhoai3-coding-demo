@@ -143,7 +143,7 @@ spec:
         # Scoped AppProject: platform repo source + *-dev destinations only.
         project: scaffolded-projects
         source:
-          repoURL: https://github.com/adnan-drina/rhoai3-coding-demo
+          repoURL: https://github.com/niksharma20/rhoai3-coding-demo
           targetRevision: main
           path: gitops/stages/050-advanced-app-platform/base/pipelines/project-pipeline
           kustomize:

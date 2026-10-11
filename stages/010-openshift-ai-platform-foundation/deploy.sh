@@ -95,7 +95,7 @@ echo "✓ AppProject rhoai-demo created"
 echo ""
 echo "── Step 4: Applying stage-010 Argo CD Application ──"
 
-GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/adnan-drina/rhoai3-coding-demo.git}"
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/niksharma20/rhoai3-coding-demo.git}"
 GIT_REPO_BRANCH="${GIT_REPO_BRANCH:-main}"
 
 APP_MANIFEST=$(mktemp)

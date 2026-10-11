@@ -13,7 +13,7 @@ metadata:
 spec:
   description: Template-scaffolded per-project delivery stacks (stage 070)
   sourceRepos:
-    - https://github.com/adnan-drina/rhoai3-coding-demo
+    - https://github.com/niksharma20/rhoai3-coding-demo
   destinations:
     - namespace: '*-dev'
       server: https://kubernetes.default.svc

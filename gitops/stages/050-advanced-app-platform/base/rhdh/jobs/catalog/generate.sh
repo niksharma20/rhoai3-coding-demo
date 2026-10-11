@@ -31,7 +31,7 @@ APP_SYNC_REVISION=$(oc get application 050-advanced-app-platform -n openshift-gi
   -o jsonpath='{.status.sync.revision}' 2>/dev/null || true)
 APP_REPO_URL=$(oc get application 050-advanced-app-platform -n openshift-gitops \
   -o jsonpath='{.spec.source.repoURL}' 2>/dev/null || true)
-[ -z "$APP_REPO_URL" ] && APP_REPO_URL="https://github.com/adnan-drina/rhoai3-coding-demo.git"
+[ -z "$APP_REPO_URL" ] && APP_REPO_URL="https://github.com/niksharma20/rhoai3-coding-demo.git"
 REPO_NO_GIT="${APP_REPO_URL%.git}"
 if [ -n "${CATALOG_RAW_BASE:-}" ]; then
   # tests only: a file:// repository standing in for raw.githubusercontent.com

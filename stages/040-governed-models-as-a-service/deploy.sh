@@ -53,7 +53,7 @@ require_cmd jq
 require_cmd oc
 require_cmd openssl
 
-GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/adnan-drina/rhoai3-coding-demo.git}"
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/niksharma20/rhoai3-coding-demo.git}"
 GIT_REPO_BRANCH="${GIT_REPO_BRANCH:-main}"
 MAAS_NS="${RHOAI_MAAS_NAMESPACE:-models-as-a-service}"
 MAAS_DB_NS="${RHOAI_MAAS_DATABASE_NAMESPACE:-models-as-a-service-db}"

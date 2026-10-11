@@ -14,7 +14,7 @@ spec:
   project: rhoai-demo
   source:
     # repoURL and targetRevision are set by deploy.sh from .env (GIT_REPO_URL, GIT_REPO_BRANCH)
-    repoURL: https://github.com/adnan-drina/rhoai3-coding-demo.git
+    repoURL: https://github.com/niksharma20/rhoai3-coding-demo.git
     targetRevision: main
     path: gitops/stages/010-openshift-ai-platform-foundation/base
   destination:

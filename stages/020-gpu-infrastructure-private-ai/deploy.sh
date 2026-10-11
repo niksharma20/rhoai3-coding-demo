@@ -29,7 +29,7 @@ echo "✓ Cluster guard passed: $ACTUAL_SERVER"
 # Fail fast if the nodes are too small for the demo stack, before any changes.
 "$ROOT_DIR/scripts/require-node-sizing.sh"
 
-GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/adnan-drina/rhoai3-coding-demo.git}"
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/niksharma20/rhoai3-coding-demo.git}"
 GIT_REPO_BRANCH="${GIT_REPO_BRANCH:-main}"
 
 APP_MANIFEST=$(mktemp)

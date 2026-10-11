@@ -39,7 +39,7 @@ metadata:
   description: Coolstore modernization system for the governed AI developer workflow.
   annotations:
     backstage.io/source-location: url:https://github.com/rhpds/mca-coolstore
-    backstage.io/techdocs-ref: url:https://github.com/adnan-drina/rhoai3-coding-demo/tree/__RHOAI3_DEMO_REVISION__
+    backstage.io/techdocs-ref: url:https://github.com/niksharma20/rhoai3-coding-demo/tree/__RHOAI3_DEMO_REVISION__
   links:
     - url: https://github.com/rhpds/mca-coolstore
       title: Source Repo
@@ -67,7 +67,7 @@ metadata:
     delivery work connected to the Coolstore domain.
   annotations:
     backstage.io/source-location: url:https://github.com/adnan-drina/coolstore-inventory-service
-    backstage.io/techdocs-ref: url:https://github.com/adnan-drina/rhoai3-coding-demo/tree/__RHOAI3_DEMO_REVISION__
+    backstage.io/techdocs-ref: url:https://github.com/niksharma20/rhoai3-coding-demo/tree/__RHOAI3_DEMO_REVISION__
     github.com/project-slug: adnan-drina/coolstore-inventory-service
     backstage.io/kubernetes-id: coolstore-inventory-service
     janus-idp.io/tekton: coolstore-inventory-service
@@ -215,7 +215,7 @@ metadata:
   description: Golden-path template for stage 070 AI-agentic development
 spec:
   type: url
-  target: https://github.com/adnan-drina/rhoai3-coding-demo/blob/__RHOAI3_DEMO_LOCATION_REF__/gitops/stages/050-advanced-app-platform/base/rhdh/templates/agentic-quarkus-scaffold/template.yaml
+  target: https://github.com/niksharma20/rhoai3-coding-demo/blob/__RHOAI3_DEMO_LOCATION_REF__/gitops/stages/050-advanced-app-platform/base/rhdh/templates/agentic-quarkus-scaffold/template.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Location
@@ -224,4 +224,4 @@ metadata:
   description: Golden-path template for stage 080 AI-autonomous migration
 spec:
   type: url
-  target: https://github.com/adnan-drina/rhoai3-coding-demo/blob/__RHOAI3_DEMO_LOCATION_REF__/gitops/stages/050-advanced-app-platform/base/rhdh/templates/app-migration/template.yaml
+  target: https://github.com/niksharma20/rhoai3-coding-demo/blob/__RHOAI3_DEMO_LOCATION_REF__/gitops/stages/050-advanced-app-platform/base/rhdh/templates/app-migration/template.yaml
