@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - postgres-pvc.yaml
+  - postgres-deployment.yaml
+  - postgres-service.yaml
+  - evalhub.yaml
+  - role-evaluator.yaml
+  - rolebinding-admins.yaml
+  - rolebinding-developers.yaml
+  - sa-enable-trustyai.yaml
+  - clusterrole-enable-trustyai.yaml
+  - clusterrolebinding-enable-trustyai.yaml
+  - job-enable-trustyai.yaml

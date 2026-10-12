@@ -1,4 +1,4 @@
-# The platform lifecycle of one Stage 080 migration run's resources.
+# The platform lifecycle of one Stage 090 migration run's resources.
 #
 # One Pipeline, two modes, one identity. The dispatcher starts it in
 # `provision` mode from the scaffolding push; the Operator starts it in
@@ -8,7 +8,7 @@
 # deletes by that label and then proves nothing is left.
 #
 # Retire a run with (archive the evidence first; see docs/OPERATIONS.md,
-# Stage 080 run isolation):
+# Stage 090 run isolation):
 #
 #   oc create -n app-platform-build -f - <<'EOF'
 #   apiVersion: tekton.dev/v1
@@ -39,7 +39,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "12"
 spec:
-  description: Provision or retire one Stage 080 migration run's own resources.
+  description: Provision or retire one Stage 090 migration run's own resources.
   params:
     - name: run-name
       type: string

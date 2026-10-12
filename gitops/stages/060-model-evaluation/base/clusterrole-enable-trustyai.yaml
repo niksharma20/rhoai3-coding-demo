@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: job-enable-dsc-trustyai
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: enable-dsc-trustyai
+    app.kubernetes.io/component: evaluation
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+rules:
+  - apiGroups:
+      - datasciencecluster.opendatahub.io
+    resources:
+      - datascienceclusters
+    verbs:
+      - get
+      - patch

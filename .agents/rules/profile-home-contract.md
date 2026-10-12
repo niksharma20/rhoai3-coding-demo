@@ -3,7 +3,7 @@ name: profile-home-contract
 skill-group: Demo Environment
 applies-to:
   - gitops/stages/050-advanced-app-platform/base/devspaces/**
-  - stages/080-ai-autonomous-migration/scaffold-repo/**
+  - stages/090-ai-autonomous-migration/scaffold-repo/**
 ---
 
 # Profile workers have three homes; dest-init must name each
@@ -24,7 +24,7 @@ interchangeable.
 | Profile `HERMES_HOME` | `…/home/profiles/<name>` | `hermes -p <name>` / kanban spawn |
 | OS `HOME` | dest-user `/home/user` at postStart; `{HERMES_HOME}/home` in a profile worker | `Path.home()`, host CLIs |
 
-Spec Kit is removed from Stage 080 (no compatibility path). Do not restore a
+Spec Kit is removed from Stage 090 (no compatibility path). Do not restore a
 `specify` PATH shim. dest-user `/home/user/.hermes/skills` remains a
 skills **read** root after `HERMES_HOME` relocation.
 

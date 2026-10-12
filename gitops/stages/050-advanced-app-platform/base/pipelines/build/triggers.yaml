@@ -17,7 +17,7 @@
 #   routes to an app-push PipelineRun in `<repo>-dev` (the first push's run
 #   fails namespace resolution while Argo is still creating the stack —
 #   harmless; developer pushes build from then on).
-# - Stage 080 migration destinations additionally carry `rhoai3-migration-run`.
+# - Stage 090 migration destinations additionally carry `rhoai3-migration-run`.
 #   Their SCAFFOLDING push — the one that creates main, which the signed
 #   payload reports as created=true with a zero `before` — also hits the
 #   migration-run trigger below. It starts the platform's own
@@ -162,7 +162,7 @@ spec:
               rhoai3.redhat.com/pipeline-project: "true"
               app.kubernetes.io/part-of: $(tt.params.repo-name)
 ---
-# Stage 080 migration runs: the run's OWN resources, rendered by PLATFORM code.
+# Stage 090 migration runs: the run's OWN resources, rendered by PLATFORM code.
 #
 # What this is NOT, any more. An earlier shape pointed an Argo CD Application at
 # the destination repository's own `k8s-run/` directory. The architect refused
@@ -321,7 +321,7 @@ spec:
             kind: ClusterInterceptor
           params:
             - name: filter
-              # Stage 080 migration destinations only (topic set by
+              # Stage 090 migration destinations only (topic set by
               # publish:github in the app-migration template), and only their
               # SCAFFOLDING push. body.created with a zero `before` is the
               # push that created main: the scaffolder's publish, and nothing

@@ -1,0 +1,30 @@
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/evaluating_ai_systems/evaluating-llms-with-evalhub_evaluate
+# LM-Eval is deprecated in OpenShift AI 3.5. EvalHub is the evaluation service.
+# tenancy single keeps jobs in this namespace. MLflow is not configured.
+apiVersion: trustyai.opendatahub.io/v1
+kind: EvalHub
+metadata:
+  name: evalhub
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: evalhub
+    app.kubernetes.io/component: evaluation
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  replicas: 1
+  tenancy: single
+  database:
+    type: postgresql
+    secret: evalhub-db-credentials
+  providers:
+    - lm-evaluation-harness
+    - garak
+    - guidellm
+    - ragas
+  collections:
+    - safety-and-fairness-v1
+    - standard-llm-evals-v1

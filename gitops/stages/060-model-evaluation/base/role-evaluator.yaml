@@ -1,0 +1,26 @@
+# Virtual resources. EvalHub checks these names with SubjectAccessReview;
+# they are not CustomResourceDefinitions.
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/evaluating_ai_systems/evaluating-llms-with-evalhub_evaluate
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: evalhub-evaluator
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: evalhub-evaluator
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: argocd
+rules:
+  - apiGroups:
+      - trustyai.opendatahub.io
+    resources:
+      - evaluations
+      - collections
+      - providers
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete

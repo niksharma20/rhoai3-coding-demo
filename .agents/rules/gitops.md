@@ -174,7 +174,7 @@ When creating or modifying manifests, verify:
 
 ## Workflow-Only Stages
 
-Stages 060, 070, and 080 are workflow-only: they have no Argo CD Application and no `deploy.sh`. Their `validate.sh` scripts validate against resources owned by the `050-advanced-app-platform` Argo CD Application.
+Stages 070, 080, and 090 are workflow-only: they have no Argo CD Application and no `deploy.sh`. Their `validate.sh` scripts validate against resources owned by the `050-advanced-app-platform` Argo CD Application. Stage 060 is a GitOps stage for EvalHub.
 
 Stage 050 is a multi-component owner managing: identity (platform RHBK), devspaces, pipelines, sonarqube, rhdh, mta, and coolstore resources.
 

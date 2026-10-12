@@ -63,11 +63,11 @@ The central design choice: developers and their tools never connect directly to 
 
 ## What The Demo Shows
 
-The demo follows an eight-stage flow organized in two parts.
+The demo follows a nine-stage flow organized in two parts.
 
 **Part 1: Building the platform (GitOps-driven)**
 
-Stages 010–050 construct the three platform layers declaratively — every resource reconciled from Git by Argo CD.
+Stages 010–060 construct the platform declaratively — every resource reconciled from Git by Argo CD. Stage 060 scores a model that Stages 030 and 040 already serve.
 
 | Stage | Intent |
 |-------|--------|
@@ -76,16 +76,17 @@ Stages 010–050 construct the three platform layers declaratively — every res
 | [030 - Private Model Serving](stages/030-private-model-serving/README.md) | Serve private LLMs with vLLM inside the platform boundary |
 | [040 - Governed Models-as-a-Service](stages/040-governed-models-as-a-service/README.md) | Expose private and external models through a governed MaaS gateway with API keys, rate limits, and telemetry |
 | [050 - Advanced Application Platform](stages/050-advanced-app-platform/README.md) | Add the developer-facing layer: Developer Hub, Dev Spaces, Pipelines, quality gates, and provenance |
+| [060 - Model Evaluation](stages/060-model-evaluation/README.md) | Score a served model with EvalHub before a team is allowed to use it |
 
 **Part 2: Climbing the AI development maturity ladder (use-case-driven)**
 
-Stages 060–080 are developer workflow exercises that consume the platform built above. Each enters through the developer portal, uses governed models from MaaS, and exits through the CI pipeline.
+Stages 070–090 are developer workflow exercises that consume the platform built above. Each enters through the developer portal, uses governed models from MaaS, and exits through the CI pipeline.
 
 | Stage | Intent |
 |-------|--------|
-| [060 - AI-Assisted Development](stages/060-ai-assisted-development/README.md) | One-shot AI coding in the IDE — and its limits without project standards |
-| [070 - AI-Agentic Development](stages/070-ai-agentic-development/README.md) | Spec-driven development where agent-executable standards guide every change |
-| [080 - AI-Autonomous Migration](stages/080-ai-autonomous-migration/README.md) | Multi-agent legacy migration with human review gates ([stage architecture](stages/080-ai-autonomous-migration/SOLUTION-ARCHITECTURE.md)) |
+| [070 - AI-Assisted Development](stages/070-ai-assisted-development/README.md) | One-shot AI coding in the IDE — and its limits without project standards |
+| [080 - AI-Agentic Development](stages/080-ai-agentic-development/README.md) | Spec-driven development where agent-executable standards guide every change |
+| [090 - AI-Autonomous Migration](stages/090-ai-autonomous-migration/README.md) | Multi-agent legacy migration with human review gates ([stage architecture](stages/090-ai-autonomous-migration/SOLUTION-ARCHITECTURE.md)) |
 
 ## How Red Hat And Open Source Make It Work
 
@@ -123,14 +124,15 @@ oc login --token=<token> --server=<api>
 ./stages/030-private-model-serving/deploy.sh
 ./stages/040-governed-models-as-a-service/deploy.sh
 ./stages/050-advanced-app-platform/deploy.sh
+./stages/060-model-evaluation/deploy.sh
 ```
 
-**Validate the developer workflow stages.** Stages 060–080 are workflow-only: all of their infrastructure (workspaces, pipelines, quality gates, the MTA stack) is deployed by Stage 050. Each keeps a read-only `validate.sh` for its demo prerequisites:
+**Validate the developer workflow stages.** Stages 070–090 are workflow-only: all of their infrastructure (workspaces, pipelines, quality gates, the MTA stack) is deployed by Stage 050. Each keeps a read-only `validate.sh` for its demo prerequisites:
 
 ```bash
-./stages/060-ai-assisted-development/validate.sh
-./stages/070-ai-agentic-development/validate.sh
-./stages/080-ai-autonomous-migration/validate.sh
+./stages/070-ai-assisted-development/validate.sh
+./stages/080-ai-agentic-development/validate.sh
+./stages/090-ai-autonomous-migration/validate.sh
 ```
 
 For deployment detail, validation strategy, and recovery procedures, see:

@@ -1,0 +1,111 @@
+schemaVersion: 2.2.2
+metadata:
+  name: agentic-quarkus-app
+attributes:
+  # Per-workspace PVC: CheCluster pvcStrategy is per-user (RWO
+  # claim-devworkspace). Starting a 070 factory workspace while
+  # agentic-coolstore is Running multi-attaches that claim (FailedMount).
+  # Same attribute as the Stage 090 factory destfile.
+  controller.devfile.io/storage-type: per-workspace
+components:
+  - name: development-tooling
+    container:
+      # Digest-pinned overlay (ws-070). Cluster pull needs the Quay pull
+      # secret on the workspace ServiceAccount. Destfile 2.2.2 has no include.
+      image: quay.io/rhoai3-coding-demo/rhoai3-ws-070@sha256:2398590df8bcc71b34e8fbf1701c9388d6cec0652e591af80b8de5725706ce25
+      mountSources: true
+      memoryRequest: 2Gi
+      memoryLimit: 6Gi
+      cpuRequest: 500m
+      cpuLimit: 2500m
+      env:
+        - name: QUARKUS_HTTP_HOST
+          value: 0.0.0.0
+        - name: MAVEN_OPTS
+          value: "-Dmaven.repo.local=/home/user/.m2/repository"
+        - name: QUARKUS_ANALYTICS_DISABLED
+          value: "true"
+        # OpenCode embeds Bun; Bun 1.3+ no longer trusts the system CA
+        # store by default (oven-sh/bun#23735).
+        - name: NODE_USE_SYSTEM_CA
+          value: "1"
+        - name: SHELL
+          value: "/usr/bin/bash"
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+        # CS-1: OpenCode managed config (/etc/opencode) — writable volume
+        # for workspace user (Architect E-061618Z).
+        - name: opencode-managed
+          path: /etc/opencode
+      endpoints:
+        - name: quarkus-dev
+          targetPort: 8080
+          exposure: public
+          secure: false
+          protocol: https
+        - name: debug
+          targetPort: 5005
+          exposure: none
+          secure: false
+          protocol: tcp
+  - name: m2
+    volume:
+      size: 1G
+  - name: opencode-managed
+    volume:
+      size: 16Mi
+commands:
+  - id: init-ai-tools
+    exec:
+      component: development-tooling
+      commandLine: |
+        PROJECT_DIR="${PROJECT_SOURCE:-$(ls -d /projects/* 2>/dev/null | head -1)}"
+        PROFILE="$(basename "${PROJECT_DIR}")"
+        for i in $(seq 1 30); do [ -d "${PROJECT_DIR}/.git" ] && break; sleep 2; done
+        # Dev Spaces 3.28 User Guide: labeled ConfigMaps mount at
+        # /etc/config/<ConfigMap_name>/<key>. The platform ConfigMap is
+        # devspace-ai-tools-init / init-ai-tools.sh (fenced file).
+        INIT_VOL="/etc/config/devspace-ai-tools-init/init-ai-tools.sh"
+        if [ ! -s "${INIT_VOL}" ]; then
+          echo "ERROR: ${INIT_VOL} is not mounted."
+          echo "ConfigMap devspace-ai-tools-init must carry"
+          echo "controller.devfile.io/mount-to-devworkspace=true"
+          echo "(Dev Spaces 3.28 User Guide, Mount a ConfigMap)."
+          echo "Agent tooling is required; refusing a healthy workspace without it."
+          exit 1
+        fi
+        echo "init-ai-tools.sh from ConfigMap volume ${INIT_VOL}"
+        chmod 700 "${INIT_VOL}" 2>/dev/null || true
+        bash "${INIT_VOL}" "${PROJECT_DIR}" "${PROFILE}" \
+          || { echo "ERROR: init-ai-tools.sh failed"; exit 1; }
+  - id: package
+    exec:
+      label: "Package"
+      component: development-tooling
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'export JAVA_HOME="${JAVA_HOME_21:-${JAVA_HOME}}" && export PATH="${JAVA_HOME}/bin:${PATH}" && mvn -q -DskipTests package'
+      group:
+        kind: build
+        isDefault: true
+  - id: test
+    exec:
+      label: "1. Run tests"
+      component: development-tooling
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'export JAVA_HOME="${JAVA_HOME_21:-${JAVA_HOME}}" && export PATH="${JAVA_HOME}/bin:${PATH}" && mvn -q test'
+      group:
+        kind: test
+        isDefault: true
+  - id: start-dev
+    exec:
+      label: "2. Start Development mode (Hot reload + debug)"
+      component: development-tooling
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: 'export JAVA_HOME="${JAVA_HOME_21:-${JAVA_HOME}}" && export PATH="${JAVA_HOME}/bin:${PATH}" && mvn compile quarkus:dev'
+      group:
+        kind: run
+        isDefault: true
+events:
+  postStart:
+    - init-ai-tools

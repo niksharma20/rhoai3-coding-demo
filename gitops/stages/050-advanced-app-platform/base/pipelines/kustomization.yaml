@@ -30,7 +30,7 @@ resources:
   - build/tekton-triggers-core-config.yaml
   # Governance boundary for scaffolded-project Applications (wave 12)
   - build/appproject-scaffolded.yaml
-  # Stage 080 per-run migration resources: PLATFORM code, rendered from a
+  # Stage 090 per-run migration resources: PLATFORM code, rendered from a
   # validated run identity (wave 12). Not an Argo CD source over a
   # self-service repository — the architect refused that seam on 2026-09-22.
   - build/task-provision-migration-run.yaml

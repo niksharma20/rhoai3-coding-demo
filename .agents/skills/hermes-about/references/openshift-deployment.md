@@ -64,7 +64,7 @@ Two components in one namespace (`hermes`):
 | Webhook-style per-platform gateway endpoints (`POST /telegram`, …); article admits "basic HTTP endpoints" with production limitations | The documented gateway is `hermes gateway run/start` with platform adapters; supervised deployments must honor the exit-75 restart contract. Treat the repo's HTTP shim as its own code, not Hermes's gateway surface |
 | No admin-tier config pinning | Managed Scope exists for exactly this shape: mount a read-only ConfigMap at `/etc/hermes` (or bake `HERMES_MANAGED_DIR` into the image/Deployment env — official guidance: fixed by the administrator, "not left user-settable") to pin `model.*`, `security.redact_secrets`, approvals posture fleet-wide |
 
-## Stage 080 adaptation notes (our platform, our rules)
+## Stage 090 adaptation notes (our platform, our rules)
 
 - Wire the model per the official mechanism: `model:` block with
   `provider: custom`, `base_url` pointing at the vLLM/MaaS endpoint,

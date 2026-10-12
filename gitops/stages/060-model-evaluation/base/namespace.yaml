@@ -1,0 +1,13 @@
+# Dedicated project. EvalHub must not run in redhat-ods-applications:
+# that namespace's NetworkPolicies block tenant job traffic.
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/evaluating_ai_systems/evaluating-llms-with-evalhub_evaluate
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: evalhub
+    app.kubernetes.io/component: evaluation
+    app.kubernetes.io/managed-by: argocd
+    evalhub.trustyai.opendatahub.io/tenant: ""

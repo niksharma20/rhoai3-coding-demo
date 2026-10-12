@@ -821,7 +821,7 @@ oc get authpolicy,tokenratelimitpolicy -n maas
 
 ## Red Hat Developer Lightspeed for MTA Cannot Call MaaS
 
-**Affected stage:** Stage 080
+**Affected stage:** Stage 090
 
 **Likely cause:** `kai-api-keys` contains placeholder values, the MaaS API key is invalid, or `llm-proxy` did not restart after secret patching.
 
@@ -836,12 +836,12 @@ oc logs deployment/llm-proxy -n openshift-mta --tail=100
 
 **Recover:**
 
-- Re-run or re-sync Stage 080 so the PostSync job provisions the MaaS key and restarts `llm-proxy`.
-- Confirm `./stages/080-ai-autonomous-migration/validate.sh` reports the MaaS credential checks as passing.
+- Re-run or re-sync Stage 090 so the PostSync job provisions the MaaS key and restarts `llm-proxy`.
+- Confirm `./stages/090-ai-autonomous-migration/validate.sh` reports the MaaS credential checks as passing.
 
 ## MTA OpenShift Login Does Not Appear
 
-**Affected stage:** Stage 080
+**Affected stage:** Stage 090
 
 **Likely cause:** OAuthClient redirect URI not patched, Keycloak identity provider not configured, or MTA route not available when the PostSync job ran.
 
@@ -855,9 +855,9 @@ oc logs job/job-patch-mta-maas-url -n openshift-mta --tail=200
 
 **Recover:**
 
-- Re-sync Stage 080.
+- Re-sync Stage 090.
 - Confirm the MTA route exists before the auth configuration job runs.
-- Re-run Stage 080 validation.
+- Re-run Stage 090 validation.
 
 ## Red Hat Developer Hub OIDC Sign-In Fails With 504 Gateway Timeout
 
@@ -1171,9 +1171,9 @@ oc logs -n wksp-ai-developer <workspace-pod> -c tooling-container --tail=100
 - Confirm resource requests/limits are sufficient.
 - Re-run Stage 060 validation.
 
-## Stage 080 dest postStart fails on dest-profile Portal `auth.json`
+## Stage 090 dest postStart fails on dest-profile Portal `auth.json`
 
-**Affected stage:** Stage 080 factory workspace (`app-migration` destfile, `development-tooling`)
+**Affected stage:** Stage 090 factory workspace (`app-migration` destfile, `development-tooling`)
 
 **Symptom:** DevWorkspace Failed. `Error creating DevWorkspace deployment: Container development-tooling has state [postStart hook] Commands failed (Kubelet reported exit code 1)`. `/projects/.platform/poststart.log` ends with `ERROR: auth.json under dest profile implementer; refuse Portal leftover.` (or `reviewer`).
 
@@ -1193,9 +1193,9 @@ oc get dw spring-petclinic-rest-legacy-v8 -n "$NS" -o jsonpath='{.status.phase}{
 - Confirm live `devspace-ai-tools-init` **removes** dest-profile `auth.json` / `auth.lock` instead of `return 1`. Sync Stage 050 if the ConfigMap still prints `refuse Portal leftover`.
 - Restart the factory workspace (`spec.started: true`). Do not dest-complete, remint, or dest-sync as part of this recovery. Do not dest-read profile `.env`.
 
-## Stage 080 dest postStart fails on MaaS Secret poll or dest-init mvn SSL
+## Stage 090 dest postStart fails on MaaS Secret poll or dest-init mvn SSL
 
-**Affected stage:** Stage 080 factory workspace (`app-migration` destfile, `development-tooling`)
+**Affected stage:** Stage 090 factory workspace (`app-migration` destfile, `development-tooling`)
 
 **Symptom:** DevWorkspace Failed. `Error creating DevWorkspace deployment: Container development-tooling has state [postStart hook] Commands failed (Kubelet reported exit code 1)`. `/projects/.platform/poststart.log` ends with one of:
 
@@ -1224,9 +1224,9 @@ oc get dw "$DW" -n "$NS" -o jsonpath='{.status.phase}{"\n"}{.status.message}{"\n
 - Restart the factory workspace (`spec.started: true`). Do not dest-complete, remint, or dest-sync as part of this recovery. Do not dest-read profile `.env`.
 - Keep Argo CD `050-advanced-app-platform` paused until this ConfigMap is committed and pushed; restoring auto-sync while GitHub still has the refuse/`secret_value`-only copy puts the failing script back.
 
-## Stage 080 dest postStart fails EX-3 write-set hook missing
+## Stage 090 dest postStart fails EX-3 write-set hook missing
 
-**Affected stage:** Stage 080 measurement dest on `harness-v2`
+**Affected stage:** Stage 090 measurement dest on `harness-v2`
 
 **Symptom:** DevWorkspace Failed. `Error creating DevWorkspace deployment: Container development-tooling has state [postStart hook] Commands failed (Kubelet reported exit code 1)`. `/projects/.platform/poststart.log` ends with `ERROR: EX-3 write-set hook missing: .../enforce-authority-boundary/scripts/write-set-hook.py`.
 
@@ -1245,9 +1245,9 @@ oc get dw petclinic-rest-v45-refac -n wksp-ai-developer
 - Confirm live `devspace-ai-tools-init` no longer `raise SystemExit` on a missing EX-3 hook. Hatch is WARN + empty `pre_tool_call` only while `.hermes/kernel/pre_tool_call.sh` is absent. That file is the K2 kernel REHOST of the measured hook (not claimed control; Gate P-kernel is CLOSED — Architect `142526Z`). Do not mkdir empty `.hermes/kernel/` to satisfy the check. K1/K3/K4 Python live beside the hook; GitOps still copies only `pre_tool_call.sh` into Managed Scope. Do not dest-apply a K2 REHOST or K4 converter as if it were a new fence.
 - Restart the dest workspace from Dev Spaces after that ConfigMap has synced. Do not copy the v1 skill into the v2 golden. Do not treat a successful start as dest-armed (a).
 
-## Stage 080 dest postStart fails agent-vs-pin assert
+## Stage 090 dest postStart fails agent-vs-pin assert
 
-**Affected stage:** Stage 080 measurement dest on `harness-v2`
+**Affected stage:** Stage 090 measurement dest on `harness-v2`
 
 **Symptom:** DevWorkspace Failed. postStart log contains `ERROR: overlay Hermes --version does not match .hermes/pins.json` (or `ensure_hermes` mismatch). Older dest-init copies may still print `assert-agent-pin: refusing off-pin agent` until ConfigMap uptake.
 
@@ -1265,12 +1265,12 @@ Do not invoke dest `.hermes/checks/assert-agent-pin.py`; that tree is retired. O
 
 **Recover:**
 
-- Operator GO `E-20260823T111522Z` ratified Hermes v0.20.5 / 2026.8.19. Dest-init fail-closes unless overlay `hermes --version` matches `.hermes/pins.json`. Do not curl-install Hermes. Do not fall back to dest `.hermes/home/hermes-agent` (Architect `202501ZA` / `185531ZA` / `210214ZA`). Spec Kit is removed from Stage 080; planning is the deterministic planner under `.hermes/lib/planner/` (activation-gated via `pins.planner.activation`).
+- Operator GO `E-20260823T111522Z` ratified Hermes v0.20.5 / 2026.8.19. Dest-init fail-closes unless overlay `hermes --version` matches `.hermes/pins.json`. Do not curl-install Hermes. Do not fall back to dest `.hermes/home/hermes-agent` (Architect `202501ZA` / `185531ZA` / `210214ZA`). Spec Kit is removed from Stage 090; planning is the deterministic planner under `.hermes/lib/planner/` (activation-gated via `pins.planner.activation`).
 - Do not treat dest-armed (a) as MATCH until dest `pins.json` and `hermes --version` agree. Do not mkdir empty `.hermes/kernel/` to work around a pin miss. Do not restore dest `.hermes/checks/`.
 
-## Stage 080 MTA receipt is kantra-fallback though overlay mta-cli is 8.2.1
+## Stage 090 MTA receipt is kantra-fallback though overlay mta-cli is 8.2.1
 
-**Affected stage:** Stage 080 factory workspace (`app-migration` destfile, `development-tooling`)
+**Affected stage:** Stage 090 factory workspace (`app-migration` destfile, `development-tooling`)
 
 **Symptom:** `mta-cli version` in the overlay prints `version: 8.2.1` and `readlink -f $(command -v mta-cli)` is `/opt/mta-cli/mta-cli`, but `evidence/producers/mta.json` has `provenance: kantra-fallback`, `admissible: false`, `binary_realpath: /opt/kantra/kantra`, and harness admission blocks `MTA_PROVENANCE`. Analyzer stderr contains `mta-analyze-legacy: /opt/mta-cli/mta-cli present but unusable; falling through` and `kantra-assert-exec: 1 runnable files under /opt/mta-cli are not executable and could not be chmod'd (/opt/mta-cli/rulesets/go/fips/tests/data/build/build.sh)`.
 
@@ -1296,9 +1296,9 @@ oc exec -n "$NS" "$POD" -c development-tooling -- \
 
 **Related docs:** `.agents/rules/ensure-cli-capability.md`, `gitops/stages/050-advanced-app-platform/base/devspaces/maas-api-key-provisioning.yaml`
 
-## Stage 080 rehearsal dies on yamlite `[id]` under UDI python3.9
+## Stage 090 rehearsal dies on yamlite `[id]` under UDI python3.9
 
-**Affected stage:** Stage 080 factory workspace / `rehearse-legacy.sh`
+**Affected stage:** Stage 090 factory workspace / `rehearse-legacy.sh`
 
 **Symptom:** `rehearse-legacy.sh` freeze and build succeed (`outcome=success warmup=success`), then step 3 prints `planner.yamlite.YamlLiteError: line 43: unsupported YAML construct '[id]' (use block form)` from `normalize-structure.py`. Dest M1 may still complete if a worker installs PyYAML for python3.11; the harness scripts call `python3` (UDI 3.9, no PyYAML).
 
@@ -1315,7 +1315,7 @@ python3 -c 'from pathlib import Path; import sys; sys.path.insert(0,"/projects/m
 - Confirm golden yamlite parses `idFields: [id]` and quoted `valueMap` keys (`"9966": "8080"`) via `yamlite.test.py`, and the template skeleton uses block-form `idFields`.
 - Do not `pip install pyyaml` into the dest as the golden path. Do not hand-edit dest `migration.yaml` mid-run unless recreating from the template. Republish golden yamlite (`bootstrap-scaffold-repos.sh`); dest clones still carry the old parser until that lands.
 
-**Related docs:** `stages/080-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/.hermes/lib/planner/yamlite.py`
+**Related docs:** `stages/090-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/.hermes/lib/planner/yamlite.py`
 
 ## Factory Workspace Starts Healthy With No Agent Tooling
 
@@ -1349,7 +1349,7 @@ oc exec -n <ws-ns> <workspace-pod> -c development-tooling -- \
 
 ## Dest Hermes worker profiles missing (`harness-v2`)
 
-**Affected stage:** Stage 080 dest on branch `harness-v2` only. Overlay / v1 goldens stay single-persona.
+**Affected stage:** Stage 090 dest on branch `harness-v2` only. Overlay / v1 goldens stay single-persona.
 
 **Likely cause:** `ensure_hermes` could not seat `orchestrator` + `implementer` (overlay `/usr/local/bin/hermes` missing, golden templates missing, or a profile `.env` gained assignments). Dest-init must not curl-install Hermes (Architect `185531ZA`). Operator GO `231808Z` retired the C-2(a) skip. Do **not** recover with `hermes profile create --clone` (EX-4 isolated `$HOME` and copied installer `.env`).
 
@@ -1370,7 +1370,7 @@ ls /projects/modernized/.hermes/home/profiles/
 
 ## Dest Hermes terminal keeps literal `${env:MAAS_*}` (`harness-v2`)
 
-**Affected stage:** Stage 080 dest. Gateway can look healthy while a later login shell is unconfigured.
+**Affected stage:** Stage 090 dest. Gateway can look healthy while a later login shell is unconfigured.
 
 **Likely cause:** Hermes v0.20.5 resolves `${env:NAME}` from **process environment only**. dest-init writes the correct names into Managed Scope `.env`, but a fresh terminal does not source that file. Worker `MAAS_API_BASE_URL` is the **MaaS gateway** (`MAAS_BASE_URL` + `/models-as-a-service/qwen3-6-27b/v1`), not the in-cluster KServe Service.
 
@@ -1393,7 +1393,7 @@ A green terminal that sourced Managed Scope `.env` is **not** the verification b
 
 ## Dest Hermes `APIConnectionError` against the MaaS route (`harness-v2`)
 
-**Affected stage:** Stage 080 dest. Worker exits with `APIConnectionError` / "Connection error" in under a second; official kanban log has no `kanban_complete` / `kanban_block`.
+**Affected stage:** Stage 090 dest. Worker exits with `APIConnectionError` / "Connection error" in under a second; official kanban log has no `kanban_complete` / `kanban_block`.
 
 **Likely cause:** `providers.qwen27b.ssl_ca_cert` is pinned to the workspace ServiceAccount `service-ca.crt` while `MAAS_API_BASE_URL` is the **MaaS ingress route** (`.apps`). OpenShift service serving certificates are valid only for `<service>.<namespace>.svc` and internal communications, so that pin cannot verify the route. Dev Spaces already mounts the platform-merged bundle at `/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem`. dest-init must pair them: `.svc` host requires the service-CA pin; a route host must omit `ssl_ca_cert`. Do **not** set `ssl_verify: false`. Do **not** dest-unblock the card.
 
@@ -1415,7 +1415,7 @@ A live comment of the pin on an already-running dest is not dest-init. Next dest
 
 ## Fresh M2 verification exits silently before producing its work list
 
-**Affected stage:** Stage 080, first `build-worklist.sh` after bootstrap.
+**Affected stage:** Stage 090, first `build-worklist.sh` after bootstrap.
 
 **Cause:** The verifier previously hashed `admission-receipt.json` with an
 unguarded pipeline. First admission follows work-list creation, so the file
@@ -1432,7 +1432,7 @@ receipt or suppress every hashing error. Run `run-verify.test.sh`, then unblock
 the same M2 task with the repair reference using native Kanban. Preserve prior
 attempts and the run deadline; read the official worker log after dispatch.
 
-**Related docs:** [Stage 080 operations](OPERATIONS.md#stage-080-golden).
+**Related docs:** [Stage 090 operations](OPERATIONS.md#stage-080-golden).
 
 ## Repeated tool calls: diagnose the input before changing the guard
 
@@ -1470,7 +1470,7 @@ scratch file it writes, with known exits, equal complete outputs and no edit bet
 
 ## M3 worker `REFUSE: LOOP_NO_OPEN_CLUSTER` then rummages `verification/loop/`
 
-**Affected stage:** Stage 080 dest loop card (measured live v9 `t_cc3b6aac`, 2026-09-15, after a workspace bounce)
+**Affected stage:** Stage 090 dest loop card (measured live v9 `t_cc3b6aac`, 2026-09-15, after a workspace bounce)
 
 **Likely cause:** `brief.py` used the work-list **head**. After a bounce the head can be empty (or a different cluster) while `verification/loop/issued.json` still names this card. The worker treated that as "go find the plan" and read issued/steps instead of blocking.
 
@@ -1482,7 +1482,7 @@ scratch file it writes, with known exits, equal complete outputs and no edit bet
 
 ## M1/M2 reviewer audit `[exit 1]` on `--log /projects/modernized/kanban/logs/`
 
-**Affected stage:** Stage 080 dest paved-road reviewer (measured live v9 M1 `t_e84503a8`, M2 `t_77e1fdac`)
+**Affected stage:** Stage 090 dest paved-road reviewer (measured live v9 M1 `t_e84503a8`, M2 `t_77e1fdac`)
 
 **Likely cause:** The SKILL said `--log <official>` and the reviewer passed a workshop path that is not `$HERMES_HOME/kanban/logs/<id>.log`. The audit needs the official file; a missing `--log` is not a reason to invent a path.
 
@@ -1494,7 +1494,7 @@ scratch file it writes, with known exits, equal complete outputs and no edit bet
 
 ## Dest worker "Transient APIConnectionError … one last primary attempt" after minutes of silence (`harness-v3`)
 
-**Affected stage:** Stage 080 dest M3 workers on the MaaS route while the model writes a large tool call (a whole `pom.xml` patch). The kanban task log shows the worker reading the brief and the pom, then nothing for ~9–12 minutes, then `🔁 Transient APIConnectionError on custom — rebuilt client, waiting 6s before one last primary attempt.` The gateway access log shows one `200 DC downstream_remote_disconnect` line per abort, each with a duration of exactly 180 s and 0 response bytes.
+**Affected stage:** Stage 090 dest M3 workers on the MaaS route while the model writes a large tool call (a whole `pom.xml` patch). The kanban task log shows the worker reading the brief and the pom, then nothing for ~9–12 minutes, then `🔁 Transient APIConnectionError on custom — rebuilt client, waiting 6s before one last primary attempt.` The gateway access log shows one `200 DC downstream_remote_disconnect` line per abort, each with a duration of exactly 180 s and 0 response bytes.
 
 **Likely cause:** Hermes's client-side stream stale detector, not the gateway. It aborts a stream after 180 s without a chunk (`HERMES_STREAM_STALE_TIMEOUT` default; the `qwen3` reasoning floor is also 180) and retries up to `HERMES_STREAM_STALE_GIVEUP` (5) times. vLLM's `qwen3_xml` tool-call parser emits nothing while a tool call's arguments are generated, so at ~18 tok/s a pom patch is minutes of silence. The per-model `stale_timeout_seconds: 900` under `providers.qwen27b` is not consulted because the runtime provider id of a base_url provider is `custom`. A 343 s fully silent non-streaming request through the same gateway completed, which rules the gateway out (Envoy HCM `stream_idle_timeout` and the qwen route timeout are both `0s`).
 
@@ -1521,7 +1521,7 @@ oc exec -n <ws-ns> <workspace-pod> -c development-tooling -- bash -c \
 
 ## MaaS route HTTP 500 / Envoy `ext_proc_error_gRPC_error_14` (`harness-v2`)
 
-**Affected stage:** Stage 040 gateway, Stage 080 dest workers on the MaaS route.
+**Affected stage:** Stage 040 gateway, Stage 090 dest workers on the MaaS route.
 
 **Likely cause:** Operator `networkpolicy/payload-processing` in `openshift-ingress` admits TCP 9004 only from `gateway.networking.k8s.io/gateway-name: data-science-gateway`. Dest Qwen is served by `maas-default-gateway` (the RHOAI 3.4 documented MaaS Gateway). Packets drop; Envoy ext_proc connect times out; the client sees HTTP 500. IPP/BBR sits in front of the endpoint picker, so a healthy EPP `:9002` is a false all-clear. Do **not** `oc edit` / `oc delete` the operator NetworkPolicy (it reverts). Do **not** repoint `router.gateway.refs` to `data-science-gateway`. Do **not** dest-unblock a gave_up M2 until the route returns 200 with a MaaS key.
 
@@ -1541,7 +1541,7 @@ oc get pods -n openshift-ingress \
 
 ## Dest gateway persist WARN / dest `.hermes/home/scripts` (`harness-v2`)
 
-**Affected stage:** Stage 080 dest on `harness-v2`. Overlay owns runtime (`/usr/local/bin/hermes`, `/opt/hermes-agent`, `HERMES_WEB_DIST`). Golden must not ship `.hermes/home/scripts` (Architect `202501ZA`).
+**Affected stage:** Stage 090 dest on `harness-v2`. Overlay owns runtime (`/usr/local/bin/hermes`, `/opt/hermes-agent`, `HERMES_WEB_DIST`). Golden must not ship `.hermes/home/scripts` (Architect `202501ZA`).
 
 **Likely cause:** Destfile or dest-init still looked for dest `supervise-gateway.sh` or `kanban-stuck-watchdog.py` under `.hermes/home/scripts`. Those files are not in the golden (`validate.sh` forbids the directory). The honest signal until a named overlay persist/watchdog GO is a WARN, not a dest script restore.
 
@@ -1614,7 +1614,7 @@ for proc in ("/proc/net/tcp","/proc/net/tcp6"):
 - **Next provision:** after golden publish + catalog re-stamp, a new workspace should show `state=listening` / `bind=0.0.0.0:9119`. Login is Managed Scope basic-auth (`ai-developer` / demo password) behind the che-gateway OAuth on the `hermes-dash` endpoint.
 - **Already-running workspace:** do not restart a live migration seat. If Hermes is already installed, start by hand in the tooling container only when the operator asks: `hermes dashboard --skip-build --host 0.0.0.0 --port 9119 --no-open` after confirming `grep basic_auth /projects/.platform/hermes/config.yaml`.
 
-**Related docs:** `gitops/stages/050-advanced-app-platform/base/rhdh/templates/app-migration/skeleton/devfile.yaml`; v2 golden `stages/080-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/.hermes/dashboard/`
+**Related docs:** `gitops/stages/050-advanced-app-platform/base/rhdh/templates/app-migration/skeleton/devfile.yaml`; v2 golden `stages/090-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/.hermes/dashboard/`
 
 ## Kilo Code Is Missing From A Dev Spaces Workspace
 
@@ -1703,9 +1703,9 @@ oc get secret -n wksp-ai-developer -l app.kubernetes.io/part-of=devspaces-maas
 
 ## Coding Assistant Project Is Missing From OpenShift AI Projects
 
-**Affected stage:** Stage 080
+**Affected stage:** Stage 090
 
-**Likely cause:** The `coding-assistant` namespace was created before the Stage 080 Argo CD Application reconciled its namespace metadata, or Argo CD was configured to ignore namespace labels and annotations. OpenShift AI shows accessible OpenShift projects in the Projects page when they carry the dashboard project metadata and the user has suitable RBAC.
+**Likely cause:** The `coding-assistant` namespace was created before the Stage 090 Argo CD Application reconciled its namespace metadata, or Argo CD was configured to ignore namespace labels and annotations. OpenShift AI shows accessible OpenShift projects in the Projects page when they carry the dashboard project metadata and the user has suitable RBAC.
 
 **Diagnose:**
 
@@ -1752,7 +1752,7 @@ Confirm the new pod stays `1/1` and that an unauthenticated model request return
 
 ## Hermes API timeouts while the model is healthy
 
-**Affected stages:** Stage 040 gateway and Stage 080 workers.
+**Affected stages:** Stage 040 gateway and Stage 090 workers.
 
 **Observed on v10, 2026-09-22:** six model connection timeouts ended a worker
 before its first tool action. The Qwen 3.8 workload was ready, but the MaaS
@@ -2204,7 +2204,7 @@ registry records live in the separate demo-registry database, so prefer
 this surgical recovery over drops.
 
 
-## Stage 080 run-resource refusal
+## Stage 090 run-resource refusal
 
 `RUN_RESOURCES_UNASSIGNED` after stamping means the resource declaration is
 missing; restore the assigned declaration, never downgrade the run to legacy.
@@ -2216,7 +2216,7 @@ must be retrieved before that binding can be verified; do not replace the receip
 Wait for the owner to finish. A killed task may leave the lock: prove the holder
 and its pod are stopped before platform cleanup. A `retiring` receipt permits
 only retirement recovery; a `retired` identity is never provisioned again.
-See [Stage 080 run isolation](OPERATIONS.md#stage-080-run-isolation) for the qualification requirements.
+See [Stage 090 run isolation](OPERATIONS.md#stage-080-run-isolation) for the qualification requirements.
 
 ### Correct Secret mounts but failed workspace identity isolation
 
@@ -2235,7 +2235,7 @@ makes no claim of worker security confinement.
 
 The Stage 050 GitOps repair (per-run `<run>-worker` ServiceAccount selected by
 destfile pod-overrides; operator-owned `devworkspace-default-role` unpatched)
-is described in [Stage 080 run isolation](OPERATIONS.md#stage-080-run-isolation).
+is described in [Stage 090 run isolation](OPERATIONS.md#stage-080-run-isolation).
 Do not hand-edit the operator-reconciled default role or broaden another
 identity to make startup pass. Restricting new workers does not revoke existing
 legacy `workspace*-sa` accounts. Verify startup and restart credentials on
@@ -2303,7 +2303,7 @@ Preserve the failed TaskRun. If its per-run lock exists, prove the holder TaskRu
 and pod are stopped before releasing it. A failed task is not a provisioning
 receipt and must not be bypassed with manually created database resources.
 
-### Stage 080: accepted compile repair leaves no successor
+### Stage 090: accepted compile repair leaves no successor
 
 An ACCEPTED step can be followed by a nonzero `advance.py` exit if its replan
 cannot admit the next unit. On v10, `UNIT_OVERSIZE` described seven repository
@@ -2326,7 +2326,7 @@ current tree before intervening; a clean retry must not be interrupted on the
 assumption that the dirty amendment remains. Record the amendment at the next
 idle boundary, without committing a worker's candidate or resetting attempts.
 
-### Stage 080: a diagnostic-family repair is pending despite lower compile errors
+### Stage 090: a diagnostic-family repair is pending despite lower compile errors
 
 **Symptom:** `VERIFICATION_PENDING cause=unassessable-scope` says a sealed file
 could not fully resolve, although the retired symbol's diagnostics disappeared.
@@ -2350,3 +2350,19 @@ repair only while the worker is stopped,
 restore the retained candidate through `restore-pending.py`, then unblock that
 same card for verification and advance. Do not broaden its write set, mint a new
 budget, waive the assessment, or repeat the product edits.
+
+## Stage 060 EvalHub stays Not Ready
+
+**Symptom:** `oc get evalhub -n evalhub` stays `phase=Pending` or the pod never starts. `validate.sh` reports TrustyAI missing or the health route fails.
+
+**Likely cause:** TrustyAI is still `Removed`, so the EvalHub CRD is absent, or the PostgreSQL secret `evalhub-db-credentials` was not created before the Deployment started.
+
+**Recover:**
+
+```bash
+./stages/060-model-evaluation/deploy.sh
+oc get dsc default-dsc -o jsonpath='{.spec.components.trustyai.managementState}{"\n"}'
+oc get pods,route,evalhub -n evalhub
+```
+
+Do not delete `evalhub-postgres` or `evalhub-db-credentials` while the database volume exists. A new password will not match the data already on the volume.

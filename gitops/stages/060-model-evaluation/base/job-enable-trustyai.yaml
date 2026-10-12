@@ -1,0 +1,41 @@
+# Stage 010 leaves trustyai Removed and Argo CD ignores that field, so this
+# stage is the only writer that turns the evaluation operator on.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-enable-dsc-trustyai
+  namespace: redhat-ods-applications
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: enable-dsc-trustyai
+    app.kubernetes.io/component: evaluation
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 6
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: rhoai-platform
+        app.kubernetes.io/name: enable-dsc-trustyai
+        app.kubernetes.io/component: evaluation
+    spec:
+      serviceAccountName: job-enable-dsc-trustyai
+      restartPolicy: Never
+      containers:
+        - name: patch
+          image: registry.redhat.io/openshift4/ose-cli@sha256:69762925e16053d77685ff3a08b3b45dd2bfa5d68277851bc6969b368bbd0cb9
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              oc patch datasciencecluster default-dsc --type=merge -p \
+                '{"spec":{"components":{"trustyai":{"managementState":"Managed"}}}}'
+              state="$(oc get datasciencecluster default-dsc -o jsonpath='{.spec.components.trustyai.managementState}')"
+              echo "trustyai=${state}"
+              test "$state" = "Managed"

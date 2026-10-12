@@ -1,4 +1,4 @@
-# The ONLY thing that creates or removes a Stage 080 migration run's resources.
+# The ONLY thing that creates or removes a Stage 090 migration run's resources.
 #
 # A run needs a parity database and fixture identities that belong to it alone,
 # created before its workspace starts and removed when the run retires. An
@@ -98,7 +98,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "12"
 spec:
   description: >-
-    Render and apply one Stage 080 migration run's own parity database, fixture
+    Render and apply one Stage 090 migration run's own parity database, fixture
     credentials and provisioning receipt from a validated run identity, or
     retire them and leave a tombstone.
   params:

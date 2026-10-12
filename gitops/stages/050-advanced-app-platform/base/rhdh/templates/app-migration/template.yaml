@@ -1,4 +1,4 @@
-# Golden-path template for Stage 080 (AI-Autonomous Migration).
+# Golden-path template for Stage 090 (AI-Autonomous Migration).
 # Takes the Git URL of a legacy application and provisions the migration
 # working set: a per-run Quarkus destination repository (catalog-registered,
 # CI/CD-wired) whose pre-start initializer clones the legacy onto a separate
@@ -108,7 +108,7 @@ spec:
       name: Fetch Quarkus migration scaffold golden repository
       action: fetch:plain
       input:
-        # Live Stage 080 golden. Historical quarkus-migration-scaffold is not
+        # Live Stage 090 golden. Historical quarkus-migration-scaffold is not
         # the template source. Do not GitHub-rename v1.
         url: https://github.com/niksharma20/quarkus-migration-scaffold-v2/tree/main
 
@@ -185,7 +185,7 @@ spec:
           # the per-project stack (namespace + pipeline) and run app-push in
           # <name>-dev. See pipelines/build/triggers.yaml.
           - rhoai3-scaffolded
-          # Stage 080 only: this repository's SCAFFOLDING push — the one that
+          # Stage 090 only: this repository's SCAFFOLDING push — the one that
           # creates main — also starts the platform's provision-migration-run
           # Pipeline, which renders this run's own parity database and fixture
           # credentials into the Dev Spaces namespace before the workspace is

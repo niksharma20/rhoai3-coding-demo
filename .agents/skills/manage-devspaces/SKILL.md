@@ -27,8 +27,8 @@ description: >-
 - **Retired standing seats** (do not recreate): `getting-started-ai-coding`, `coolstore-inventory-service`, `mca-coolstore`.
 - **Cloned repos**:
   - `https://github.com/niksharma20/coolstore-inventory-service.git` — Stage 060 `agentic-coolstore` project
-  - Stage 070/080 factory repos are published per run; Stage 080 also clones the legacy URL as `/projects/legacy`
-- **Extensions**: Kilo Code 7.4.8 via `DEFAULT_EXTENSIONS` on `agentic-coolstore`. MTA 8.2.0 (pack + core + java + redhat.java) via the Stage 080 factory destfile.
+  - Stage 070/080 factory repos are published per run; Stage 090 also clones the legacy URL as `/projects/legacy`
+- **Extensions**: Kilo Code 7.4.8 via `DEFAULT_EXTENSIONS` on `agentic-coolstore`. MTA 8.2.0 (pack + core + java + redhat.java) via the Stage 090 factory destfile.
 - **GitOps**: Managed by Argo CD `050-advanced-app-platform` with a repair hook (no Replace on DevWorkspaces)
 - **AI tool selection**: Stage 060 `agentic-coolstore` is Kilo Code. Factory 070/080 destfiles select the agentic/harness tooling for that stage.
 - **Manifests**: `gitops/stages/050-advanced-app-platform/base/devspaces/workspaces.yaml` (namespaces + RBAC), `agentic-workspace.yaml` (Stage 060 seats)
@@ -71,14 +71,14 @@ The MTA extension pack (`mta-vscode-extension`) does not reliably resolve its de
 
 ### Project Order Matters for MTA
 
-The MTA Konveyor Core extension warns "Multi-root workspaces are not supported! Only the first workspace folder will be analyzed." Stage 080 factory destfiles put `legacy` first so analysis targets the migration source.
+The MTA Konveyor Core extension warns "Multi-root workspaces are not supported! Only the first workspace folder will be analyzed." Stage 090 factory destfiles put `legacy` first so analysis targets the migration source.
 
 ### Memory Requirements
 
 The default tooling container memory (~1152Mi) is insufficient for VS Code + Kilo Code + MTA + Java/Maven. Current seats:
 
 - **agentic-coolstore**: 6Gi limit / 2Gi request
-- **Stage 080 factory destfile**: 12Gi limit / 2Gi request for MTA analysis and the harness
+- **Stage 090 factory destfile**: 12Gi limit / 2Gi request for MTA analysis and the harness
 
 ```yaml
 components:

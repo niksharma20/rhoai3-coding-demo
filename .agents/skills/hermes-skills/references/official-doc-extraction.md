@@ -682,7 +682,7 @@ remain flagged as supplementary, per the dossier's own discipline — the
 SKILL.md states the documented default (`false`) and notes the open
 proposal.
 
-### Stage 080 relevance notes
+### Stage 090 relevance notes
 
 - The official `external_dirs` example itself lists `~/.agents/skills` as
   a plausible entry. If stage 080 ever wires a shared or repo-provided

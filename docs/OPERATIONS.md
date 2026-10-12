@@ -27,16 +27,16 @@ The repository follows a GitOps-first pattern:
 
 The deploy scripts do not imperatively install every component themselves. They hand ownership to Argo CD.
 
-## Stage 080 golden
+## Stage 090 golden
 
-Stage 080 authoring lives in
-`stages/080-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/`
+Stage 090 authoring lives in
+`stages/090-ai-autonomous-migration/scaffold-repo/quarkus-migration-scaffold/`
 on `main`. The Stage 050 `app-migration` template fetches GitHub
 `quarkus-migration-scaffold-v2`. Publish both workshop goldens with
 `scripts/bootstrap-scaffold-repos.sh` (force-push reset). Do not
 GitHub-rename historical `quarkus-migration-scaffold`. Do not dest-complete
-Operator ack gates or run `kanban daemon --force`. Factory isolation: Stage 080
-[SOLUTION-ARCHITECTURE.md](../stages/080-ai-autonomous-migration/SOLUTION-ARCHITECTURE.md)
+Operator ack gates or run `kanban daemon --force`. Factory isolation: Stage 090
+[SOLUTION-ARCHITECTURE.md](../stages/090-ai-autonomous-migration/SOLUTION-ARCHITECTURE.md)
 §8.
 
 ### Continuing M1 and recovering a pending unit
@@ -123,7 +123,7 @@ and runs normal parent gating. Record the diagnosis in a native comment and
 verify those fields and the issued seal remain unchanged. Do not rerun an LLM
 specifier or decomposer over the sealed card, or edit its database directly.
 
-### Stage 080 run declaration and launch preflight
+### Stage 090 run declaration and launch preflight
 
 Every run created by the `app-migration` template after 2026-09-24 carries
 `run-budget.json` (schema `rhoai3.run-budget/v2`), written by the factory into
@@ -145,7 +145,7 @@ run-agnostic; the expected model and wall budget come from the golden checkout:
 ```bash
 WORKSPACE=<project-name> POD=<workspace-pod> GOLDEN_CHECKOUT=<clean golden clone> \
 GOLDEN_SHA=<full sha> PLATFORM_SHA=<full sha> \
-  bash stages/080-ai-autonomous-migration/run-preflight.sh
+  bash stages/090-ai-autonomous-migration/run-preflight.sh
 ```
 
 The version-specific v10/v11 preflight scripts are retired; their original
@@ -153,10 +153,10 @@ implementations remain in Git history. A `rhoai3.run-budget/v1` file is refused
 as stale. New runs use the current preflight above.
 
 `validate.sh` checks stage readiness and the remaining scaffold/platform checks.
-The retired Stage 080 helper suites are no longer part of validation;
+The retired Stage 090 helper suites are no longer part of validation;
 the launch preflight has syntax and image/identity regression checks in this entrypoint.
 
-### Stage 080 run isolation
+### Stage 090 run isolation
 
 Repeated isolation campaigns are retired by the operator's decision. New runs
 use the current read-only preflight against the selected platform and golden.
@@ -206,7 +206,7 @@ present in that ancestor commit. These checks detect inconsistent bindings;
 they are not a sandbox against a worker that can alter its environment or invoke
 a database client outside the harness.
 
-### Stage 080: after creating a migration workspace
+### Stage 090: after creating a migration workspace
 
 Run `scripts/patch-workspace-maas-route.sh <workspace-name>` once. It points the
 workspace's MaaS hostname at the gateway's in-cluster Service (stage 040
@@ -217,7 +217,7 @@ silent for ~8 minutes (a large tool call) and costs the worker its full stale
 timeout. The pod restarts once and dest-init re-runs; verify with
 `getent hosts <maas host>` inside the pod.
 
-### Stage 080: authorizing a run (the pilot seal)
+### Stage 090: authorizing a run (the pilot seal)
 
 Parity resets resolve the JDBC driver from
 `verification/build/.work/classpath.txt`, with the OS-account Maven cache as
@@ -255,7 +255,7 @@ board history and evidence, then unblock the original task. Record this as an
 assisted continuation without restarting its time budget. See the
 [fresh-M2 recovery](TROUBLESHOOTING.md#fresh-m2-verification-exits-silently-before-producing-its-work-list).
 
-### Stage 080 loop: Operator actions (no human sign-off)
+### Stage 090 loop: Operator actions (no human sign-off)
 
 The M3 loop is autonomous by design: every card ends on a mechanical
 verdict (`advance.py` ACCEPTED / REVERTED / VERIFICATION_PENDING / DEFERRED).
@@ -277,7 +277,7 @@ does is repair mechanisms, never edit product code or evidence by hand:
 | The loop refuses `RUN_CONTROL_MISSING`, `HARNESS_RELEASE_MISMATCH` or `MODEL_PROFILE_MISMATCH` (exit 2 from `run-verify.sh`, `advance.py` or `k4_mint.py`) | A v13+ run is governed by the platform's `<run>-run-control` ConfigMap (the migration-run provisioner writes it once from the scaffolding push, mounted read-only at `/etc/rhoai3/run-control`): the contract, the pinned model profile, and the harness release = the scaffolding commit. MISSING: the ConfigMap or its mount is absent; re-run provisioning for the run and restart the workspace. A mid-run harness change is an assisted continuation: commit it, then record `release-rebase.json` (`{"commit": "<sha>", "reason": "..."}`) in the ConfigMap with `oc` (platform authority, not the workspace); it applies at the next workspace start (mount-on-start). A profile change is a new run. |
 | `LOOP_ADMISSION` / `LOOP_NO_SUCCESSOR` after an ACCEPTED step (the card is blocked, not done) | `verification/loop/continuation.json` names the stage (`admission-refused`, `mint-failed`, `no-successor`) and the reason. Restore the named prerequisite, then unblock the card; its worker re-runs `advance.py` with the same arguments, which finishes admission and the mint without a second step. K2 refuses `kanban_complete` until the continuation is `minted`. |
 | Admission names `RUN_ACTIVATION_FOREIGN`, or the M1 binding is missing | The activation is the platform record plus the write-once M1 binding (`/projects/.platform/run-control-state/binding.json`, never `.hermes/pins.json`). FOREIGN: the record names another run or scaffolding commit; create the run again. A lost binding: re-run the M1 continuation (`autostart-migration.sh --after-m1`), which writes it once. |
-| A worker is stopped with `STOP WORKER_TOOL_LOOP` (5 identical successful tool calls) | Nothing to do on the first halt: the runtime records a failed run, the card is respawned once (`max_retries` 2), and the new run's brief carries `candidate_on_tree` (its unaccepted edits and the next action). A second halt blocks the card (`gave_up`, with the guard's metadata). That is a finding for the harness, not something to reclaim again. Requires the ws-080 image with `stages/080-ai-autonomous-migration/hermes-runtime` patches (`/opt/rhoai3/080.pins` `hermes.patched_tree`). |
+| A worker is stopped with `STOP WORKER_TOOL_LOOP` (5 identical successful tool calls) | Nothing to do on the first halt: the runtime records a failed run, the card is respawned once (`max_retries` 2), and the new run's brief carries `candidate_on_tree` (its unaccepted edits and the next action). A second halt blocks the card (`gave_up`, with the guard's metadata). That is a finding for the harness, not something to reclaim again. Requires the ws-080 image with `stages/090-ai-autonomous-migration/hermes-runtime` patches (`/opt/rhoai3/080.pins` `hermes.patched_tree`). |
 | Auto-start refuses `HERMES_RUNTIME_UNPATCHED` | The workspace image's Hermes is not the tree the harness was qualified on: `/opt/rhoai3/080.pins` `hermes.patched_tree` must equal golden `pins.json` `hermes_agent.patched_tree`. An unpatched image runs without the loop halt, the truncation and quota stops, and the request pacer, while still reporting `hermes 0.20.5`. Repin the devfile to the baked ws-080 digest and create the run again. |
 | A worker run ends `STOP MODEL_REQUEST_BUDGET`, `STOP MODEL_QUOTA` or `STOP MODEL_OUTPUT_INCOMPLETE` | These are infrastructure stops, not repair verdicts. The run is recorded as failed, and the card is respawned once. REQUEST_BUDGET: the run spent its allowance (the profile's `quota`, 190 requests/h for Qwen 3.8, counted in `/projects/.platform/run-control-state/requests.log` across main, retry and auxiliary calls). The next free slot was more than 900 s away, so nothing was sent. Let the window roll, then unblock. MODEL_QUOTA: MaaS kept answering 429; check other consumers of the bucket before unblocking. OUTPUT_INCOMPLETE: a response hit the 32768 output cap; the card is too large for one response. |
 | A worker's `git checkout`/`restore`/`reset`/`stash`/`clean`/`add`/`commit` is refused by K2 | By design: the loop tools own the index and the tree (`advance.py` commits or reverts, `restore-pending.py` restores). Workers may read with `diff`/`status`/`log`/`show`. |
@@ -364,9 +364,10 @@ Deploy stages in order:
 ./stages/030-private-model-serving/deploy.sh
 ./stages/040-governed-models-as-a-service/deploy.sh
 ./stages/050-advanced-app-platform/deploy.sh
+./stages/060-model-evaluation/deploy.sh
 ```
 
-Stages 060–080 are workflow-only (no deploy scripts, no Argo CD Applications of their own): stage 050 owns their infrastructure as components (identity, devspaces, pipelines, sonarqube, rhdh, mta). Validate their demo prerequisites with each stage's read-only `validate.sh`. Stage 050's deploy script provisions `app-platform-build` secrets from `.env` (`GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`) before applying the Application.
+Stage 060 creates the EvalHub database password in the cluster, then applies its Argo CD Application. Stages 070–090 are workflow-only (no deploy scripts, no Argo CD Applications of their own): stage 050 owns their infrastructure as components (identity, devspaces, pipelines, sonarqube, rhdh, mta). Validate their demo prerequisites with each stage's read-only `validate.sh`. Stage 050's deploy script provisions `app-platform-build` secrets from `.env` (`GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`) before applying the Application.
 
 Each script applies one file from `gitops/argocd/app-of-apps/`. GitOps stages are the `stages/*/` directories that have `deploy.sh`; the matching Application is `gitops/argocd/app-of-apps/<directory-name>.yaml`. Workflow-only stages omit `deploy.sh` and have no Application.
 
@@ -377,9 +378,60 @@ Each script applies one file from `gitops/argocd/app-of-apps/`. GitOps stages ar
 | 030 | `030-private-model-serving` | Local private model serving |
 | 040 | `040-governed-models-as-a-service` | MaaS control plane, gateway, governance, external models, MCP context |
 | 050 | `050-advanced-app-platform` | Platform RHBK identity, Dev Spaces, webhook dispatcher + per-project pipelines + SonarQube gate, Developer Hub, Trusted Artifact Signer, MTA, coolstore dev environment |
-| 060 | *(workflow-only)* | AI-assisted development on stage 050 workspaces |
-| 070 | *(workflow-only)* | AI-agentic development (OpenCode + skills) |
-| 080 | *(workflow-only)* | AI-autonomous migration on the stage 050 MTA stack |
+| 060 | `060-model-evaluation` | EvalHub, PostgreSQL, TrustyAI enablement, evaluator RBAC |
+| 070 | *(workflow-only)* | AI-assisted development on stage 050 workspaces |
+| 080 | *(workflow-only)* | AI-agentic development (OpenCode + skills) |
+| 090 | *(workflow-only)* | AI-autonomous migration on the stage 050 MTA stack |
+
+## Stage 060 — Run an evaluation
+
+EvalHub is ready when `./stages/060-model-evaluation/validate.sh` passes. A job is a separate step. Sign in as `ai-admin` (identity provider `demo-htpasswd`) and use the private Qwen model through the MaaS gateway. Do not point unpublished tests at `gpt-4o-mini`; that path sends prompts to OpenAI.
+
+1. Take a token and confirm the service. The tenant is the `evalhub` project.
+
+```bash
+export TOKEN="$(oc whoami -t)"
+export EVALHUB_URL="https://$(oc get route evalhub -n evalhub -o jsonpath='{.spec.host}')"
+curl -sk -H "Authorization: Bearer $TOKEN" -H "X-Tenant: evalhub" \
+  "$EVALHUB_URL/api/v1/health"
+curl -sk -H "Authorization: Bearer $TOKEN" -H "X-Tenant: evalhub" \
+  "$EVALHUB_URL/api/v1/evaluations/providers"
+```
+
+2. Store a MaaS API key in the `evalhub` project. The data key must be `api-key`. Do not commit the file.
+
+```bash
+oc create secret generic model-auth -n evalhub --from-literal=api-key='<maas-api-key>'
+```
+
+3. Start with one benchmark. `ifeval` checks whether the model follows instructions. The full `standard-llm-evals-v1` collection includes MMLU-Pro, GPQA, math, and long-context tests and occupies a GPU for a long time. Use `safety-and-fairness-v1` when the question is unsafe output. Use `ragas` only after a document store is connected; it does not score product knowledge by itself.
+
+```bash
+curl -sk -X POST "$EVALHUB_URL/api/v1/evaluations/jobs" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant: evalhub" \
+  -d '{
+    "name": "qwen-instruction-check",
+    "model": {
+      "url": "https://maas.apps.<cluster>/models-as-a-service/qwen3-6-27b/v1",
+      "name": "qwen3-6-27b",
+      "auth": { "secret_ref": "model-auth" }
+    },
+    "benchmarks": [
+      { "provider_id": "lm_evaluation_harness", "benchmark_id": "ifeval" }
+    ]
+  }'
+```
+
+4. Read `id` from the response. The job moves from `pending` to `running` to `completed`.
+
+```bash
+curl -sk -H "Authorization: Bearer $TOKEN" -H "X-Tenant: evalhub" \
+  "$EVALHUB_URL/api/v1/evaluations/jobs/<job_id>"
+```
+
+Repeat the same benchmark against `qwen3-8-27b-int4` and compare the scores. Cancel a run with `DELETE` on that job URL. The database password created by `deploy.sh` stays in `evalhub-postgres` and `evalhub-db-credentials`. Do not rotate those secrets while PostgreSQL data is on the existing volume.
 
 ## Validation Strategy
 
@@ -696,7 +748,7 @@ oc get oauthclient platform-keycloak -o jsonpath='{.redirectURIs[0]}'
 
 ### Stage 050 — MTA (mta component)
 
-The stage 050 `mta` component installs Migration Toolkit for Applications 8.2 (consumed by the workflow-only stage 080). Developer Lightspeed/Kai is disabled until the demo needs it (`kai_llm_proxy_enabled`/`kai_solution_server_enabled: false`; no MaaS wiring — see BACKLOG "Developer Lightspeed re-enable"). Hub auth uses the 8.2 built-in OIDC provider federated to the platform realm: the `configure-mta-platform-sso` PostSync job maintains the realm roles (`role.admin`/`role.architect`/`role.migrator`), the `mta-hub` client (realm roles delivered as `+role.<name>` entries in the access token's `scope` claim), the `mta-idp-client-secret` Secret, and the `platform-sso` IdentityProvider CR, restarting the hub on changes. It also owns the `mta-hub-workspace-config` PostSync job (`mta-hub-config` ConfigMaps in the persona namespaces). Stage 080 analysis workspaces come from the `app-migration` factory destfile; stage 080's `validate.sh` covers that contract.
+The stage 050 `mta` component installs Migration Toolkit for Applications 8.2 (consumed by the workflow-only stage 080). Developer Lightspeed/Kai is disabled until the demo needs it (`kai_llm_proxy_enabled`/`kai_solution_server_enabled: false`; no MaaS wiring — see BACKLOG "Developer Lightspeed re-enable"). Hub auth uses the 8.2 built-in OIDC provider federated to the platform realm: the `configure-mta-platform-sso` PostSync job maintains the realm roles (`role.admin`/`role.architect`/`role.migrator`), the `mta-hub` client (realm roles delivered as `+role.<name>` entries in the access token's `scope` claim), the `mta-idp-client-secret` Secret, and the `platform-sso` IdentityProvider CR, restarting the hub on changes. It also owns the `mta-hub-workspace-config` PostSync job (`mta-hub-config` ConfigMaps in the persona namespaces). Stage 090 analysis workspaces come from the `app-migration` factory destfile; stage 080's `validate.sh` covers that contract.
 
 Useful checks:
 
@@ -876,7 +928,7 @@ The MoE's real advantage (3.4× aggregate throughput at 4-way concurrency,
 | OpenCode coding worker | `qwen38/qwen3-8-27b-int4` | Same default; `qwen27b/qwen3-6-27b` stays in the picker | Separate MaaS base URL per model, same API key |
 | MiniMax M2 (exception) | Hermes `providers.minimax` / OpenCode `redhat/minimax-m2` | AD-008 exception only — typed escalation file required; **not** the default; **not** in `fallback_providers` | Direct Red Hat LiteMaaS until RHOAI 3.5 restores external-model streaming through the gateway. 196K window |
 
-**How to add another Hermes model:** named `providers.<name>` entry + managed `.env` secret + explicit `models:` map (`discover_models: false`). Change `model.default` only if it is the new main. Exception models follow the MiniMax gate. Full recipe: `stages/080-ai-autonomous-migration/README.md` (Applied Hermes model configuration) and AD-008 §11 in `harness-refactoring/architecture/SOLUTION-ARCHITECTURE.md`. Official schema: [Configuring Models](https://hermes-agent.nousresearch.com/docs/user-guide/configuring-models).
+**How to add another Hermes model:** named `providers.<name>` entry + managed `.env` secret + explicit `models:` map (`discover_models: false`). Change `model.default` only if it is the new main. Exception models follow the MiniMax gate. Full recipe: `stages/090-ai-autonomous-migration/README.md` (Applied Hermes model configuration) and AD-008 §11 in `harness-refactoring/architecture/SOLUTION-ARCHITECTURE.md`. Official schema: [Configuring Models](https://hermes-agent.nousresearch.com/docs/user-guide/configuring-models).
 
 **Workshop capacity overlay:** `qwen3-6-35b-a3b`
 (gitops `040/.../local-models/optional/qwen35b-workshop/`) — the MoE
