@@ -45,12 +45,9 @@ Important paths:
 
 ## Demo stages
 
-The workshop has two parts:
+The published workshop is stages 010-060. Do not present stages 070-090 as part of the current workshop unless the user asks for them.
 
-- Stages 010-060 build the trusted AI development platform for platform engineers.
-- Stages 070 and later show enterprise developer workflows that consume that platform.
-
-Current implemented stages:
+Published stages:
 
 1. 010 OpenShift AI Platform Foundation
 2. 020 GPU Infrastructure for Private AI
@@ -58,6 +55,9 @@ Current implemented stages:
 4. 040 Governed Models-as-a-Service
 5. 050 Advanced Application Platform (Dev Spaces, RHDH, Pipelines, SonarQube, MTA, Coolstore)
 6. 060 Model Evaluation (EvalHub — score a served model before a team uses it)
+
+Hidden for now (directories remain; omit from the published path):
+
 7. 070 AI-Assisted Development (Kilo Code, one-shot coding — workflow stage)
 8. 080 AI-Agentic Development (OpenCode, AGENTS.md, skills — workflow stage)
 9. 090 AI-Autonomous Migration (MTA + multi-agent migration — workflow stage)

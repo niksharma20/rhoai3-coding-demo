@@ -190,4 +190,4 @@ Prerequisites: cert-manager must be installed before deploy.sh runs (the script 
 
 ## Next Stage
 
-[Stage 050: AI-Assisted Development](../070-ai-assisted-development/README.md) moves governed model access into developer workspaces with IDE-integrated AI coding tools that consume MaaS endpoints instead of personal provider keys.
+[Stage 050: Advanced Application Platform](../050-advanced-app-platform/README.md) adds the developer portal, workspaces, and pipelines on top of this gateway.

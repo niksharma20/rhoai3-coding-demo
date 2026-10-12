@@ -13,7 +13,7 @@ _This directory stays operational-only. Stage 090 v2 authoring is on `main`; liv
 
 ## Learning Path
 
-The implemented flow is the ordered directories under [`../stages/`](../stages/):
+The published workshop is the ordered path below. Stages 070–090 remain in the repository and are omitted from this path for now.
 
 1. [Project README](../README.md)
 2. [Stage 010: OpenShift AI Platform Foundation](../stages/010-openshift-ai-platform-foundation/README.md)
@@ -21,11 +21,7 @@ The implemented flow is the ordered directories under [`../stages/`](../stages/)
 4. [Stage 030: Private Model Serving](../stages/030-private-model-serving/README.md)
 5. [Stage 040: Governed Models-as-a-Service](../stages/040-governed-models-as-a-service/README.md)
 6. [Stage 050: Advanced Application Platform](../stages/050-advanced-app-platform/README.md)
-7. [Stage 060: AI-Assisted Development](../stages/070-ai-assisted-development/README.md)
-8. [Stage 070: AI-Agentic Development](../stages/080-ai-agentic-development/README.md)
-9. [Stage 090: AI-Autonomous Migration](../stages/090-ai-autonomous-migration/README.md)
-
-[Stage 060](../stages/070-ai-assisted-development/README.md) starts the developer-facing part of the workshop. It uses the Stage 060 workspace and Stage 050 portal assets to teach governed vibe coding, prompt discipline, review gates, and evidence capture. The former Stage 110 spec and README-alignment placeholder has been merged into Stage 060. Deferred developer workflow topics `120-170` are tracked in [BACKLOG.md](../BACKLOG.md) until each one has a concrete implementation plan, artifacts, and validation path.
+7. [Stage 060: Model Evaluation](../stages/060-model-evaluation/README.md)
 
 ## AI Collaboration Rules
 

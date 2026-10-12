@@ -19,7 +19,7 @@
 
 Stages 010–040 build the governed model platform. Before a single developer prompt is issued, the enterprise also needs the **application platform layer** that AI-driven development will run on: a developer portal where every workflow starts as a self-service template, and a delivery path where every change exits through pipelines with quality gates and provenance.
 
-That is this stage's job. The AI development maturity ladder (stages 060–080) does not treat self-service and trusted delivery as separate rungs — they are constants. Every rung enters through the portal and exits through the pipeline: *self-service in, trusted delivery out, at every maturity level.*
+That is this stage's job. The published workshop continues to model evaluation. Coding exercises that would enter through this portal are omitted from that path.
 
 Without a portal, the AI platform remains scattered across dashboards, routes, namespaces, and README files. Without delivery gates, AI-multiplied output multiplies the question auditors ask: *who built this artifact, from what, and can we prove it?* This stage answers both before the developer arc begins.
 
@@ -121,7 +121,7 @@ Developer Hub is a discovery and self-service surface: it links to approved plat
 
 ### Part 1 — The platform layer, before the first prompt
 
-**Know.** Stages 010–040 governed the models. This stage governs the application side: one portal where every AI development workflow will start, one delivery path where every AI-generated change will be proven. The maturity ladder you are about to climb (060–080) enters through this portal and exits through these pipelines at every rung.
+**Know.** Stages 010–040 governed the models. This stage governs the application side: one portal and one delivery path. The published workshop continues at model evaluation, not at a coding exercise.
 
 **Show.**
 - Open Developer Hub from the console launcher; sign in via OIDC to the MTA Keycloak realm (OpenShift identity is federated into Keycloak as a broker — one identity chain, end to end).
@@ -135,7 +135,7 @@ Developer Hub is a discovery and self-service surface: it links to approved plat
 **Show (today, base setup).**
 - OpenShift console, Pipelines view: the Tekton stack is operator-managed; each project namespace runs its own `app-push` pipeline instantiated from the shared `project-pipeline` base.
 - Operators view: Trusted Artifact Signer installed — the sigstore stack awaiting its Securesign instance.
-- Talk track: in the implementation phase, every push from stages 060–080 goes through build, SonarQube quality gate, and (with Chains + TAS) signed SLSA attestation. "The same platform that lets agents write code proves what was built from it."
+- Talk track: a project pipeline runs build and the SonarQube quality gate. With Chains and Trusted Artifact Signer configured, the same pipeline can record signed SLSA attestation.
 
 ## Deploy And Validate
 
@@ -165,4 +165,4 @@ Validation notes: `validate.sh` treats a missing Securesign instance as a warnin
 
 ## Next Stage
 
-[Stage 060: Model Evaluation](../060-model-evaluation/README.md) scores a served model before a team is allowed to use it. [Stage 070: AI-Assisted Development](../070-ai-assisted-development/README.md) then starts the maturity ladder: one-shot prompts in a governed workspace, entering through this stage's portal and exiting through its pipelines.
+[Stage 060: Model Evaluation](../060-model-evaluation/README.md) scores a served model before a team is allowed to use it. That is the next published stage.

@@ -18,21 +18,13 @@ Centered around open-source LLMs and AI agents, it lets companies serve private 
 
 **Red Hat Enterprise Application Platform.** An application platform is an integrated set of tools and services for developing, testing, deploying, and managing software through its entire lifecycle — not just one phase. It comprises everything developers need to build and run both applications and AI: infrastructure management for scalability, CI/CD pipelines with quality gates, monitoring, service mesh, APIs, GitOps, runtimes, security tooling, and developer portals that provide self-service access to all of it.
 
-Red Hat delivers this through the Advanced Developer Suite: Developer Hub for golden-path templates and software catalog, OpenShift Dev Spaces for managed cloud workspaces, OpenShift Pipelines for trusted delivery with provenance, and Migration Toolkit for Applications for modernization workflows. Every developer tool in this demo — from IDE assistants to autonomous migration agents — enters through the portal and exits through the pipeline. *Self-service in, trusted delivery out.*
+Red Hat delivers this through the Advanced Developer Suite: Developer Hub for the software catalog, OpenShift Dev Spaces for managed cloud workspaces, and OpenShift Pipelines for delivery with quality gates. The current workshop uses that layer as platform capability. The coding exercises that sit on top of it are not part of the published path.
 
-## The Demo: An AI Development Maturity Ladder
+## The Demo
 
-With the three platform pillars in place, this workshop demonstrates a progressive developer journey. Developers do not arrive at autonomous AI workflows in one step — and tooling that skips the journey gets rejected or misused. The demo structures the developer experience as an **AI development maturity ladder**, with familiar tools at each rung, every one consuming models through the same governed platform:
+The published workshop builds the platform and then scores a model before a team uses it. A writer can draft on a private model, through one governed gateway, and the platform team can keep a score for instruction following, safety, and speed.
 
-| Rung | Developer experience | Tooling |
-|------|----------------------|---------|
-| **Assisted** (060) | First one-shot prompts in the IDE — and their limits | Dev Spaces + Kilo Code via MaaS |
-| **Agentic** (070) | Enterprise standards as reusable skills and specs that agents follow and improve | OpenCode + AGENTS.md + skills |
-| **Autonomous** (080) | Harness-governed legacy migration with human review gates | MTA + OpenCode |
-
-Each rung deliberately exposes its own limits to motivate the next: one-shot prompting fails on project standards, which motivates skills and specs; skill-guided agents motivate autonomous multi-agent workflows — and every step lands on the same platform rails.
-
-The workshop does not claim regulatory compliance. It shows controls and boundaries that help architects design AI-enabled development platforms for privacy-sensitive, sovereignty-sensitive, and regulated environments.
+The workshop does not claim regulatory compliance. It shows controls and boundaries that help architects design AI-enabled platforms for privacy-sensitive, sovereignty-sensitive, and regulated environments.
 
 ## Architecture
 
@@ -63,11 +55,7 @@ The central design choice: developers and their tools never connect directly to 
 
 ## What The Demo Shows
 
-The demo follows a nine-stage flow organized in two parts.
-
-**Part 1: Building the platform (GitOps-driven)**
-
-Stages 010–060 construct the platform declaratively — every resource reconciled from Git by Argo CD. Stage 060 scores a model that Stages 030 and 040 already serve.
+The published workshop is six stages. Stages 010–060 construct the platform declaratively — every resource reconciled from Git by Argo CD. Stage 060 scores a model that Stages 030 and 040 already serve.
 
 | Stage | Intent |
 |-------|--------|
@@ -78,21 +66,11 @@ Stages 010–060 construct the platform declaratively — every resource reconci
 | [050 - Advanced Application Platform](stages/050-advanced-app-platform/README.md) | Add the developer-facing layer: Developer Hub, Dev Spaces, Pipelines, quality gates, and provenance |
 | [060 - Model Evaluation](stages/060-model-evaluation/README.md) | Score a served model with EvalHub before a team is allowed to use it |
 
-**Part 2: Climbing the AI development maturity ladder (use-case-driven)**
-
-Stages 070–090 are developer workflow exercises that consume the platform built above. Each enters through the developer portal, uses governed models from MaaS, and exits through the CI pipeline.
-
-| Stage | Intent |
-|-------|--------|
-| [070 - AI-Assisted Development](stages/070-ai-assisted-development/README.md) | One-shot AI coding in the IDE — and its limits without project standards |
-| [080 - AI-Agentic Development](stages/080-ai-agentic-development/README.md) | Spec-driven development where agent-executable standards guide every change |
-| [090 - AI-Autonomous Migration](stages/090-ai-autonomous-migration/README.md) | Multi-agent legacy migration with human review gates ([stage architecture](stages/090-ai-autonomous-migration/SOLUTION-ARCHITECTURE.md)) |
-
 ## How Red Hat And Open Source Make It Work
 
 Red Hat OpenShift provides the enterprise Kubernetes foundation: identity, RBAC, networking, routing, scheduling, storage integration, monitoring, and GitOps patterns. Red Hat OpenShift AI adds the AI control plane for model serving, GenAI Studio, model registry, and MaaS. Red Hat Advanced Developer Suite capabilities bring workspaces, modernization, portal discovery, and AI-assisted developer experiences into the same platform story.
 
-Open-source models and AI-assisted tooling make the developer experience possible. Models such as Nemotron, Qwen, and MiniMax run locally on the platform through vLLM, keeping prompts and code inside the trust boundary. [Kilo Code](https://kilocode.ai/) is an open-source AI coding assistant that runs inside the IDE, providing one-shot prompt-and-edit workflows — the starting point of the maturity ladder. [OpenCode](https://opencode.ai/) is a terminal-based AI coding agent that goes further: it reads `AGENTS.md` (a project-level file that organizes reusable skills) to apply enterprise conventions on every change without longer prompts. [Spec-kit](https://github.com/adnan-drina/spec-kit) completes the agentic workflow — a lightweight spec-driven development tool that turns natural-language requirement briefs into structured specifications the agent implements against, closing the loop between what the team wants and what the agent builds. All three tools consume models exclusively through the governed MaaS gateway, so platform teams retain full visibility and control regardless of which tool or model a developer chooses.
+Open-source models make the private path possible. Qwen runs on the platform through vLLM, so unpublished prompts stay inside the trust boundary. Approved external models, when used, still pass through the same MaaS gateway, where the platform team keeps the key, the limit, and the record of use.
 
 Red Hat's role in this architecture is integration, lifecycle, support posture, and operational consistency — turning open-source building blocks into a governed enterprise platform.
 
@@ -127,14 +105,6 @@ oc login --token=<token> --server=<api>
 ./stages/060-model-evaluation/deploy.sh
 ```
 
-**Validate the developer workflow stages.** Stages 070–090 are workflow-only: all of their infrastructure (workspaces, pipelines, quality gates, the MTA stack) is deployed by Stage 050. Each keeps a read-only `validate.sh` for its demo prerequisites:
-
-```bash
-./stages/070-ai-assisted-development/validate.sh
-./stages/080-ai-agentic-development/validate.sh
-./stages/090-ai-autonomous-migration/validate.sh
-```
-
 For deployment detail, validation strategy, and recovery procedures, see:
 
 - [Documentation Index](docs/README.md)
@@ -155,7 +125,7 @@ rhoai3-coding-demo/
 |-- .agents/                         # Tool-neutral shared agent guidance: rules, skills, hooks, references
 |-- gitops/
 |   |-- bootstrap/                   # Declarative OpenShift GitOps bootstrap (stage 010)
-|   |-- argocd/app-of-apps/          # Argo CD Applications for GitOps stages 010-050
+|   |-- argocd/app-of-apps/          # Argo CD Applications for GitOps stages 010-060
 |   `-- stages/                      # GitOps source for stage manifests
 |-- stages/                          # Stage READMEs and per-stage deploy/validate scripts
 `-- docs/                            # Operations, troubleshooting, TechDocs, and governance docs
@@ -163,7 +133,7 @@ rhoai3-coding-demo/
 
 ## This Repository Practices What It Demonstrates
 
-Stage 070 teaches agentic development with `AGENTS.md` and reusable skills. This repository is maintained the same way: [`AGENTS.md`](AGENTS.md) is the agent entry point, and [`.agents/`](.agents/README.md) holds tool-neutral rules, doc-grounded skills for every Red Hat product in the demo, and safety hooks (including a cluster guard that blocks mutating `oc`/`kubectl` commands against unintended clusters). Tool-specific directories such as `.cursor/` contain only thin bridge files that point at the shared layer.
+[`AGENTS.md`](AGENTS.md) is the agent entry point, and [`.agents/`](.agents/README.md) holds tool-neutral rules, doc-grounded skills for every Red Hat product in the demo, and safety hooks (including a cluster guard that blocks mutating `oc`/`kubectl` commands against unintended clusters). Tool-specific directories such as `.cursor/` contain only thin bridge files that point at the shared layer.
 
 ## Demo Personas
 
@@ -192,5 +162,3 @@ Stage 070 teaches agentic development with `AGENTS.md` and reusable skills. This
 - [Migration Toolkit for Applications 8.1 documentation](https://docs.redhat.com/en/documentation/migration_toolkit_for_applications/8.1/)
 - [Red Hat Developer Hub 1.9 documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9)
 - [Red Hat OpenShift Dev Spaces documentation](https://docs.redhat.com/en/documentation/red_hat_openshift_dev_spaces/)
-- [A guide to AI code assistants with Red Hat OpenShift Dev Spaces](https://developers.redhat.com/articles/2026/01/28/guide-ai-code-assistants-red-hat-openshift-dev-spaces)
-- [Vibes, specs, skills, and agents: The four pillars of AI coding](https://developers.redhat.com/articles/2026/03/30/vibes-specs-skills-agents-ai-coding)

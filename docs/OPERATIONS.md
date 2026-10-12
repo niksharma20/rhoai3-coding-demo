@@ -367,7 +367,7 @@ Deploy stages in order:
 ./stages/060-model-evaluation/deploy.sh
 ```
 
-Stage 060 creates the EvalHub database password in the cluster, then applies its Argo CD Application. Stages 070–090 are workflow-only (no deploy scripts, no Argo CD Applications of their own): stage 050 owns their infrastructure as components (identity, devspaces, pipelines, sonarqube, rhdh, mta). Validate their demo prerequisites with each stage's read-only `validate.sh`. Stage 050's deploy script provisions `app-platform-build` secrets from `.env` (`GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`) before applying the Application.
+Stage 060 creates the EvalHub database password in the cluster, then applies its Argo CD Application. Stages 070–090 stay in the repository and are omitted from the published workshop. Stage 050's deploy script provisions `app-platform-build` secrets from `.env` (`GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`) before applying the Application.
 
 Each script applies one file from `gitops/argocd/app-of-apps/`. GitOps stages are the `stages/*/` directories that have `deploy.sh`; the matching Application is `gitops/argocd/app-of-apps/<directory-name>.yaml`. Workflow-only stages omit `deploy.sh` and have no Application.
 
@@ -379,9 +379,6 @@ Each script applies one file from `gitops/argocd/app-of-apps/`. GitOps stages ar
 | 040 | `040-governed-models-as-a-service` | MaaS control plane, gateway, governance, external models, MCP context |
 | 050 | `050-advanced-app-platform` | Platform RHBK identity, Dev Spaces, webhook dispatcher + per-project pipelines + SonarQube gate, Developer Hub, Trusted Artifact Signer, MTA, coolstore dev environment |
 | 060 | `060-model-evaluation` | EvalHub, PostgreSQL, TrustyAI enablement, evaluator RBAC |
-| 070 | *(workflow-only)* | AI-assisted development on stage 050 workspaces |
-| 080 | *(workflow-only)* | AI-agentic development (OpenCode + skills) |
-| 090 | *(workflow-only)* | AI-autonomous migration on the stage 050 MTA stack |
 
 ## Stage 060 — Run an evaluation
 

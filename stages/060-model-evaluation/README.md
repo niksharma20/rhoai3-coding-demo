@@ -85,4 +85,4 @@ Deploy after Stage 040 so a private model exists to score. Submitting a job, sto
 
 ## Next Stage
 
-[Stage 070: AI-Assisted Development](../070-ai-assisted-development/README.md) uses the models this stage can score, inside a governed workspace.
+This is the last stage on the published workshop path.

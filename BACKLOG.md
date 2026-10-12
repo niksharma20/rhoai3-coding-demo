@@ -1,6 +1,10 @@
 # Backlog
 
 Open limitations, unfinished work, and the evidence needed to understand them.
+
+## Published workshop stops at stage 060 (2026-10-12)
+
+Stages 070, 080, and 090 remain in the tree and are omitted from the published workshop (root README, docs learning path, and the deployment-order table). Restore them to those surfaces when the coding exercises should be shown again. Do not delete the stage directories as part of that hide.
 Completed run narratives remain in Git history. Paths under `tmp/` are local
 evidence, excluded from Git.
 
