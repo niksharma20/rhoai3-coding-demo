@@ -1,0 +1,52 @@
+# The check sits on the model path so the existing MaaS API key and model
+# allow-list apply. A bare /v1 path is denied by the gateway default policy.
+# The prefix is rewritten to the NeMo checks endpoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: maas-guardrails
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: maas-guardrails
+    app.kubernetes.io/component: guardrails
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: maas-default-gateway
+      namespace: openshift-ingress
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /models-as-a-service/qwen3-6-27b/guardrails
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /v1/guardrail
+      backendRefs:
+        - kind: Service
+          name: maas-guardrails-gateway
+          port: 8000
+          weight: 1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /models-as-a-service/qwen3-8-27b-int4/guardrails
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /v1/guardrail
+      backendRefs:
+        - kind: Service
+          name: maas-guardrails-gateway
+          port: 8000
+          weight: 1

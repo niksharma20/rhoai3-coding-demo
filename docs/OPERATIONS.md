@@ -430,6 +430,24 @@ curl -sk -H "Authorization: Bearer $TOKEN" -H "X-Tenant: evalhub" \
 
 Repeat the same benchmark against `qwen3-8-27b-int4` and compare the scores. Cancel a run with `DELETE` on that job URL. The database password created by `deploy.sh` stays in `evalhub-postgres` and `evalhub-db-credentials`. Do not rotate those secrets while PostgreSQL data is on the existing volume.
 
+## Stage 060 — Check a draft on the gateway
+
+NeMo Guardrails is a path on the same MaaS host as the private models. Use the API key that is already allowed to call that model. The check does not generate text and does not send the draft to OpenAI.
+
+```bash
+curl -sk -X POST \
+  "https://maas.apps.<cluster>/models-as-a-service/qwen3-6-27b/guardrails/checks" \
+  -H "Authorization: Bearer <maas-api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen3-6-27b","messages":[{"role":"user","content":"Draft a short note about the product launch."}]}'
+```
+
+`status` is `success` when the draft passes, and `blocked` when a rail matches. Send the model reply as an `assistant` message in the same list to check the answer. A normal sentence that names a person is allowed. An email address, phone number, or the words password, secret, API key, or token are blocked.
+
+## Stage 060 — Record the result on the model card
+
+`./stages/060-model-evaluation/record-evaluation.sh` writes the guardrail path onto the `Qwen3.6-27B-FP8` card in `demo-registry`. It sets `evaluation_status` to `passed` only when EvalHub has a completed job for `qwen3-6-27b` that includes a score. With no completed job the status is `awaiting-score`. Run the script again after a job completes.
+
 ## Validation Strategy
 
 Run static stage-layout validation before cluster work:

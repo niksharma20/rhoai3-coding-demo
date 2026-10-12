@@ -1,0 +1,21 @@
+# The operator Service targets the auth proxy (443 to 8443), which expects an
+# OpenShift token. This Service targets the NeMo container so the MaaS gateway
+# can enforce its own API-key policy on /v1/guardrail. Cluster-internal callers
+# of this Service are not checked again by the proxy.
+apiVersion: v1
+kind: Service
+metadata:
+  name: maas-guardrails-gateway
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: maas-guardrails
+    app.kubernetes.io/component: guardrails
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app: maas-guardrails
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

@@ -1,0 +1,26 @@
+# The operator route uses an OpenShift token. The MaaS gateway path is a
+# separate Service on the container port, and the gateway AuthPolicy requires
+# a MaaS API key. mcpGateway is not set: that field is the MCP tool-call
+# gateway, which is Technology Preview and is not this model's gateway.
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/enabling_ai_safety_with_guardrails/enabling-ai-safety-with-nemo-guardrails_nemo-guardrails
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: NemoGuardrails
+metadata:
+  name: maas-guardrails
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: maas-guardrails
+    app.kubernetes.io/component: guardrails
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    security.opendatahub.io/enable-auth: "true"
+spec:
+  replicas: 1
+  nemoConfigs:
+    - name: maas-guardrails-config
+      configMaps:
+        - maas-guardrails-config
+      default: true

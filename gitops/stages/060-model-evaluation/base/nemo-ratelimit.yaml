@@ -1,0 +1,30 @@
+# The gateway default TokenRateLimitPolicy allows zero tokens on any path that
+# is not a model route. A route-level limit overrides that deny for these checks.
+# Checks do not call the model. The limit only keeps the path open for a key
+# that is already allowed to call qwen3-6-27b.
+apiVersion: kuadrant.io/v1alpha1
+kind: TokenRateLimitPolicy
+metadata:
+  name: maas-guardrails
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: maas-guardrails
+    app.kubernetes.io/component: guardrails
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: maas-guardrails
+  limits:
+    guardrail-checks:
+      counters:
+        - expression: auth.identity.userid
+      rates:
+        - limit: 100000
+          window: 1h
+      when:
+        - predicate: auth.identity.userid != ""

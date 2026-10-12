@@ -27,6 +27,7 @@ TrustyAI stays `Removed` in Stage 010. This stage's sync hook sets it to `Manage
 - Providers `lm-evaluation-harness`, `garak`, `guidellm`, and `ragas`.
 - Collections `standard-llm-evals-v1` and `safety-and-fairness-v1`.
 - Submit rights for `rhods-admins` (`ai-admin`) and `rhoai-developers` (`ai-developer`).
+- NeMo Guardrails on the MaaS gateway. A caller with a key for `qwen3-6-27b` or `qwen3-8-27b-int4` can check a draft at `/models-as-a-service/<model>/guardrails/checks` before or after generation. The check blocks email addresses, phone numbers, card numbers, US Social Security numbers, and text that contains a password, secret, API key, or token. It does not decide whether the draft matches product pages.
 
 ## What To Notice And Why It Matters
 

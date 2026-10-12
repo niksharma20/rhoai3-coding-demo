@@ -1,0 +1,52 @@
+# Built-in detectors only. No LLM call, so a draft is not sent to a model to be judged.
+# PERSON is omitted: Presidio treats ordinary names as sensitive data and would
+# block a normal product draft. Secrets, contact details, and card numbers stay blocked.
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/enabling_ai_safety_with_guardrails/enabling-ai-safety-with-nemo-guardrails_nemo-guardrails
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maas-guardrails-config
+  namespace: evalhub
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: maas-guardrails
+    app.kubernetes.io/component: guardrails
+    app.kubernetes.io/managed-by: argocd
+data:
+  config.yaml: |
+    rails:
+      config:
+        sensitive_data_detection:
+          input:
+            entities:
+              - EMAIL_ADDRESS
+              - PHONE_NUMBER
+              - CREDIT_CARD
+              - US_SSN
+          output:
+            entities:
+              - EMAIL_ADDRESS
+              - PHONE_NUMBER
+              - CREDIT_CARD
+              - US_SSN
+        regex_detection:
+          input:
+            patterns:
+              - "\\b(password|secret|api[_-]?key|token)\\b"
+              - "\\d{3}-\\d{2}-\\d{4}"
+            case_insensitive: true
+          output:
+            patterns:
+              - "\\b(password|secret|api[_-]?key|token)\\b"
+              - "\\d{3}-\\d{2}-\\d{4}"
+            case_insensitive: true
+      input:
+        flows:
+          - detect sensitive data on input
+          - regex check input
+      output:
+        flows:
+          - detect sensitive data on output
+          - regex check output
+  rails.co: |
+    # Built-in rails only.

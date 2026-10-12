@@ -78,6 +78,14 @@ DB=$(oc get secret evalhub-db-credentials -n "$NS" --no-headers 2>/dev/null || t
 [[ -n "$DB" ]] && R="pass" || R="missing"
 check "EvalHub database secret exists" "$R"
 
+PHASE=$(oc get nemoguardrails maas-guardrails -n "$NS" -o jsonpath='{.status.phase}' 2>/dev/null || true)
+[[ "$PHASE" == "Ready" ]] && R="pass" || R="phase=${PHASE:-missing}"
+check "NeMo guardrails are Ready" "$R"
+
+ROUTE=$(oc get httproute maas-guardrails -n "$NS" -o jsonpath='{.spec.rules[0].matches[0].path.value}' 2>/dev/null || true)
+[[ "$ROUTE" == "/models-as-a-service/qwen3-6-27b/guardrails" ]] && R="pass" || R="path=${ROUTE:-missing}"
+check "Guardrail check is on the MaaS gateway" "$R"
+
 echo
 echo "Validation: ${PASS} passed, ${FAIL} failed"
 [[ "$FAIL" -eq 0 ]]
