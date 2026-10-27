@@ -1,0 +1,35 @@
+# OpenShift 4.22 installs openshift-ingress-deny-all with an empty pod selector
+# and both Ingress and Egress policy types, and no allow rules. The Stage 040
+# hooks that copy the ingress certificate and patch the gateway hostname run
+# in this namespace, so without an allow they cannot reach the API.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: maas-ingress-job-egress
+  namespace: openshift-ingress
+  labels:
+    app.kubernetes.io/name: maas-ingress-job-egress
+    app.kubernetes.io/component: maas-gateway
+    app.kubernetes.io/part-of: maas
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+spec:
+  podSelector:
+    matchExpressions:
+      - key: job-name
+        operator: In
+        values:
+          - job-prepare-maas-gateway-tls
+          - job-patch-maas-gateway-hostname
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+        - port: 443
+          protocol: TCP
+        - port: 6443
+          protocol: TCP
