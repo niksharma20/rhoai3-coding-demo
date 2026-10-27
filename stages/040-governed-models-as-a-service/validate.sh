@@ -21,10 +21,10 @@ fi
 MAAS_NS="${RHOAI_MAAS_NAMESPACE:-models-as-a-service}"
 MAAS_DB_NS="${RHOAI_MAAS_DATABASE_NAMESPACE:-models-as-a-service-db}"
 MAAS_DB_CONFIG_SECRET="${RHOAI_MAAS_DB_CONFIG_SECRET:-maas-db-config}"
-PINNED_RHCL_CSV="${RHOAI_PINNED_RHCL_CSV:-rhcl-operator.v1.3.5}"
-PINNED_AUTHORINO_CSV="${RHOAI_PINNED_AUTHORINO_CSV:-authorino-operator.v1.3.1}"
-PINNED_DNS_CSV="${RHOAI_PINNED_DNS_CSV:-dns-operator.v1.3.1}"
-PINNED_LIMITADOR_CSV="${RHOAI_PINNED_LIMITADOR_CSV:-limitador-operator.v1.3.1}"
+PINNED_RHCL_CSV="${RHOAI_PINNED_RHCL_CSV:-rhcl-operator.v1.4.4}"
+PINNED_AUTHORINO_CSV="${RHOAI_PINNED_AUTHORINO_CSV:-authorino-operator.v1.4.4}"
+PINNED_DNS_CSV="${RHOAI_PINNED_DNS_CSV:-dns-operator.v1.4.3}"
+PINNED_LIMITADOR_CSV="${RHOAI_PINNED_LIMITADOR_CSV:-limitador-operator.v1.4.3}"
 OPENAI_MODEL_ID="${RHOAI_OPENAI_MODEL_ID:-gpt-4o-mini}"
 OPENAI_MODEL_RESOURCE="${RHOAI_OPENAI_MODEL_RESOURCE:-gpt-4o-mini}"
 OPENAI_PROVIDER_SECRET="${RHOAI_OPENAI_PROVIDER_SECRET:-openai-provider-api-key}"
@@ -739,9 +739,9 @@ while IFS='|' read -r sub_name pin_csv allowed_csvs label; do
   fi
   check "${label} Operator is pinned to the MaaS-compatible CSV (installed + unsubscribed)" "$R"
 done <<EOF
-authorino-operator-stable-redhat-operators-openshift-marketplace|${PINNED_AUTHORINO_CSV}|authorino-operator.v1.3.1 authorino-operator.v1.3.2|Authorino
-dns-operator-stable-redhat-operators-openshift-marketplace|${PINNED_DNS_CSV}|dns-operator.v1.3.1|DNS
-limitador-operator-stable-redhat-operators-openshift-marketplace|${PINNED_LIMITADOR_CSV}|limitador-operator.v1.3.1|Limitador
+authorino-operator-stable-redhat-operators-openshift-marketplace|${PINNED_AUTHORINO_CSV}|authorino-operator.v1.4.4|Authorino
+dns-operator-stable-redhat-operators-openshift-marketplace|${PINNED_DNS_CSV}|dns-operator.v1.4.3|DNS
+limitador-operator-stable-redhat-operators-openshift-marketplace|${PINNED_LIMITADOR_CSV}|limitador-operator.v1.4.3|Limitador
 EOF
 
 for crd in \
