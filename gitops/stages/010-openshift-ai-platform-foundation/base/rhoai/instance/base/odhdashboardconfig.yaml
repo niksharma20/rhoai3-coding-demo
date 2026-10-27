@@ -15,7 +15,7 @@ spec:
     disableKueue: false
     disableTracking: false
     genAiStudio: true
-    maasAuthPolicies: true
+    # RHOAI 3.5.2 rejects spec.dashboardConfig.maasAuthPolicies.
     modelAsService: true
     observabilityDashboard: true
     vLLMDeploymentOnMaaS: true
