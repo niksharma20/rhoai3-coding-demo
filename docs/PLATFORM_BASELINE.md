@@ -8,7 +8,7 @@ This file is the canonical platform target for the demo and shared skills. Updat
 |-----------|---------|---------------|
 | Red Hat OpenShift AI Self-Managed | 3.5 | https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/ |
 | Red Hat OpenShift Container Platform | 4.20 | https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/ |
-| Red Hat OpenShift Data Foundation | 4.20 | https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.20/ |
+| Red Hat OpenShift Data Foundation | 4.22 on this OpenShift 4.22 cluster (catalog has no 4.20 channel) | https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.22/ |
 | Red Hat Connectivity Link | 1.3.4 (1.4.0 deprecated) | https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3 |
 | Red Hat OpenShift Cluster Observability Operator | 1.4.0 compatibility hold | https://docs.redhat.com/en/documentation/red_hat_openshift_cluster_observability_operator/1-latest/ |
 | Red Hat build of OpenTelemetry | 3.9 | https://docs.redhat.com/en/documentation/red_hat_build_of_opentelemetry/3.9 |
