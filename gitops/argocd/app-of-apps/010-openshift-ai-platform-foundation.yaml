@@ -45,6 +45,7 @@ spec:
       jsonPointers:
         - /spec/components/kueue
         - /spec/components/kserve
+        - /spec/components/aigateway
         - /spec/components/llamastackoperator
         - /spec/components/ogx
         - /spec/components/aipipelines

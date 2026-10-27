@@ -72,9 +72,11 @@ spec:
             - -c
             - |
               set -euo pipefail
-              # OGX replaces Llama Stack. The 3.5 operator refuses to create the
+              # RHOAI 3.5.2 rejects turning kserve.modelsAsService back to Managed
+              # after it has been Removed. MaaS now lives on aigateway.
+              # OGX replaces Llama Stack. The operator refuses to create the
               # OGX module while llamastackoperator is still Managed.
               oc patch datasciencecluster default-dsc --type=merge -p \
-                '{"spec":{"components":{"kserve":{"managementState":"Managed","modelsAsService":{"managementState":"Managed"}},"llamastackoperator":{"managementState":"Removed"},"ogx":{"managementState":"Managed"}}}}'
-              oc get datasciencecluster default-dsc -o jsonpath='{.spec.components.kserve.modelsAsService.managementState}{" "}{.spec.components.llamastackoperator.managementState}{" "}{.spec.components.ogx.managementState}'
+                '{"spec":{"components":{"kserve":{"managementState":"Managed"},"aigateway":{"managementState":"Managed","modelsAsAService":{"managementState":"Managed"}},"llamastackoperator":{"managementState":"Removed"},"ogx":{"managementState":"Managed"}}}}'
+              oc get datasciencecluster default-dsc -o jsonpath='{.spec.components.aigateway.modelsAsAService.managementState}{" "}{.spec.components.llamastackoperator.managementState}{" "}{.spec.components.ogx.managementState}'
               echo

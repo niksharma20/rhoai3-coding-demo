@@ -674,8 +674,8 @@ DSC_PHASE=$(jsonpath "datasciencecluster/default-dsc" "" "{.status.phase}")
 [[ "$DSC_PHASE" == "Ready" ]] && R="pass" || R="phase=${DSC_PHASE:-not found}"
 check "DataScienceCluster Ready" "$R"
 
-DSC_MAAS=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.kserve.modelsAsService.managementState}")
-[[ "$DSC_MAAS" == "Managed" ]] && R="pass" || R="modelsAsService=${DSC_MAAS:-not found}"
+DSC_MAAS=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.aigateway.modelsAsAService.managementState}")
+[[ "$DSC_MAAS" == "Managed" ]] && R="pass" || R="modelsAsAService=${DSC_MAAS:-not found}"
 check "DataScienceCluster MaaS is Managed" "$R"
 
 DSC_OGX=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.ogx.managementState}")

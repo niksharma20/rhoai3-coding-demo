@@ -577,7 +577,7 @@ wait_for_jsonpath "Red Hat Connectivity Link pinned CSV" \
 
 wait_for_jsonpath "DataScienceCluster MaaS management" \
   "datasciencecluster/default-dsc" "" \
-  "{.spec.components.kserve.modelsAsService.managementState}" "Managed" 60
+  "{.spec.components.aigateway.modelsAsAService.managementState}" "Managed" 60
 
 wait_for_jsonpath "DataScienceCluster OGX management" \
   "datasciencecluster/default-dsc" "" \

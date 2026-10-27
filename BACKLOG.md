@@ -342,6 +342,7 @@ The demo operator channel is `stable-3.5` (`rhods-operator.3.5.1`). GitHub `main
 
 - [x] Consecutive upgrade from `rhods-operator.3.4.4` to `rhods-operator.3.5.1` on the current sandbox, with `DataScienceCluster` staying Ready.
 - [ ] OpenShift 4.22 catalogs no longer publish RHCL 1.3. Stage 040 pins `rhcl-operator.v1.4.4` plus Authorino 1.4.4, DNS 1.4.3, and Limitador 1.4.3. Do not approve 1.5. RHOAIENG-76586 still needs the gateway proxy at 2Gi (already set) and an AuthPolicy identity filter before rate-limit counters count. Confirm a 429 on this cluster before calling rate limits done.
+- [ ] RHOAI 3.5.2 will not turn `kserve.modelsAsService` back to Managed after Stage 010 leaves it Removed. Stage 040 enables `aigateway.modelsAsAService` instead. Do not patch the deprecated field.
 - [ ] Cluster Observability Operator stays at `cluster-observability-operator.v1.4.0` until COO 1.5 is revalidated on this 3.5 cluster.
 - [ ] Retest external-model streaming and the gemma4 runtime on 3.5.1 before changing those workarounds.
 - [ ] OGX is Technology Preview. On 3.5.1 the operator only starts it after `llamastackoperator` is `Removed`. The shipped CSV does not register `ogxs.components.platform.opendatahub.io`; that CRD is in the operator image and had to be applied before the module could be created. GitHub `main` still has the Stage 040 job set Llama Stack to `Managed`, so the next sync of that job turns OGX back off until the local job change is pushed. No `OGXServer` is deployed; a server is a project workload and needs PostgreSQL.
