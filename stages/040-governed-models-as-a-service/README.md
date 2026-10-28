@@ -64,6 +64,7 @@ Stage 040 is the governance control point for all model consumption that follows
 |------|--------|-------------------|----------|---------|
 | `devspaces-coding-models` | SA `devspace-maas-key-provisioner` | qwen3-6-27b @20M/1h, qwen3-8-27b-int4 @20M/1h | 100 | Dev Spaces workspaces (Kilo Code / OpenCode). Default client model is qwen3-8-27b-int4; qwen3-6-27b stays selectable |
 | `personal-kube-admin` / `personal-ai-developer` / `personal-ai-admin` | one user each | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K, claude-sonnet-5 @100K | **150** | Interactive/Playground — wins user-token selection |
+| `personal-admin` | OpenShift user `admin` | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K | **160** | Sandbox console login. Claude stays off this subscription until the Anthropic provider Secret exists |
 
 Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-hub-models`, `model-evaluation`, `ai-safety-guardrails`. The last three had no API keys and no running consumer. `ai-admin` and `ai-developer` keep access through their personal subscriptions.
 
@@ -76,7 +77,7 @@ Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-
 
 **Red Hat internal external models:** `qwen3-235b` (16K context) and `minimax-m2` (196K context) are published as governed MaaS models via a LiteLLM proxy at `maas-rhdp.apps.maas.redhatworkshops.io`. One shared API key (`.env` `REDHAT_MODELS_API_KEY` → Secret `redhat-models-provider-api-key`, `inference.llm-d.ai/ipp-managed=true` label) authenticates both models. The MaaS integration uses the `ExternalModel` + `MaaSModelRef` pattern so both models appear in subscriptions and the Playground alongside the local models and gpt-4o-mini.
 
-**Visibility semantics:** what a user sees in the MaaS dashboard = what their own subscriptions authorize. Admin users (kube:admin) may see grayed-out subscription links for SA-owned subscriptions (like `devspaces-coding-models`); this is correct behavior — the admin is not an owner of that subscription.
+**Visibility semantics:** what a user sees in the MaaS dashboard = what their own subscriptions authorize. The sandbox console user is `admin`, which is a different subject from `kube:admin`, so that login uses `personal-admin`. `kube:admin` may see grayed-out subscription links for SA-owned subscriptions (like `devspaces-coding-models`); that is expected, because `kube:admin` is not an owner of that subscription. Claude Sonnet 5 stays unpublished until `ANTHROPIC_API_KEY` is set and the provider Secret `anthropic-provider-api-key` exists.
 
 **Usage attribution:** external-model rows in the MaaS usage dashboard show the upstream response's model id (e.g. `minimaxai/minimax-m2-maas`), not the MaaS alias (`minimax-m2`). This is expected when the provider returns a different model identifier than the one the MaaS gateway advertises.
 

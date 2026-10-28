@@ -238,3 +238,78 @@ spec:
       environment: demo
       provider: governed-models
       modelSet: personal-access
+---
+# Sandbox console login is the OpenShift user "admin", which is not kube:admin.
+# Claude is omitted here: without the Anthropic provider Secret the model ref
+# stays unready and a subscription that includes it is not shown as Active.
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSSubscription
+metadata:
+  name: personal-admin
+  namespace: models-as-a-service
+  labels:
+    app.kubernetes.io/name: personal-admin
+    app.kubernetes.io/component: maas-subscription
+    demo.rhoai.io/provider: governed-models
+  annotations:
+    argocd.argoproj.io/sync-wave: "18"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  owner:
+    users:
+      - admin
+  modelRefs:
+    - name: qwen3-6-27b
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 1000000
+          window: 1h
+    - name: qwen3-8-27b-int4
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 1000000
+          window: 1h
+    - name: gpt-4o-mini
+      namespace: models-as-a-service
+      tokenRateLimits:
+        - limit: 100000
+          window: 1h
+  priority: 160
+  tokenMetadata:
+    organizationId: rhoai3-coding-demo
+    costCenter: ai-platform
+    labels:
+      environment: demo
+      provider: governed-models
+      modelSet: personal-access
+---
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSAuthPolicy
+metadata:
+  name: personal-admin
+  namespace: models-as-a-service
+  labels:
+    app.kubernetes.io/name: personal-admin
+    app.kubernetes.io/component: maas-auth-policy
+    demo.rhoai.io/provider: governed-models
+  annotations:
+    argocd.argoproj.io/sync-wave: "18"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  subjects:
+    users:
+      - admin
+  modelRefs:
+    - name: qwen3-6-27b
+      namespace: models-as-a-service
+    - name: qwen3-8-27b-int4
+      namespace: models-as-a-service
+    - name: gpt-4o-mini
+      namespace: models-as-a-service
+  meteringMetadata:
+    organizationId: rhoai3-coding-demo
+    costCenter: ai-platform
+    labels:
+      environment: demo
+      provider: governed-models
+      modelSet: personal-access
