@@ -13,6 +13,8 @@ spec:
   dashboardConfig:
     autorag: true
     disableKueue: false
+    # Default true hides Develop & train -> Evaluations, including EvalHub.
+    disableLMEval: false
     disableTracking: false
     genAiStudio: true
     # RHOAI 3.5.2 rejects spec.dashboardConfig.maasAuthPolicies.
