@@ -19,6 +19,8 @@ resources:
   - operators/pipelines-subscription.yaml
   - operators/configure-tekton-pruner.yaml
   - operators/rhtas-subscription.yaml
+  - operators/securesign.yaml
+  - operators/configure-securesign-issuer.yaml
   - operators/approve-installplans.yaml
   # Console plugin enablement (wave 10): activates pipelines-console-plugin
   - console-plugin

@@ -86,6 +86,10 @@ ROUTE=$(oc get httproute maas-guardrails -n "$NS" -o jsonpath='{.spec.rules[0].m
 [[ "$ROUTE" == "/models-as-a-service/qwen3-6-27b/guardrails" ]] && R="pass" || R="path=${ROUTE:-missing}"
 check "Guardrail check is on the MaaS gateway" "$R"
 
+TAI=$(oc get trustyaiservice trustyai-service -n demo-sandbox --no-headers 2>/dev/null || true)
+[[ -n "$TAI" ]] && R="pass" || R="missing"
+check "TrustyAI explainability service exists in demo-sandbox" "$R"
+
 echo
 echo "Validation: ${PASS} passed, ${FAIL} failed"
 [[ "$FAIL" -eq 0 ]]

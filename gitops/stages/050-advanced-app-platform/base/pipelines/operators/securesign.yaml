@@ -1,0 +1,93 @@
+# Trusted Artifact Signer instance. The operator Subscription is wave 0;
+# this CR follows once the Securesign CRD exists. Fulcio's OIDC issuer is
+# the platform realm. The committed value is a placeholder because the
+# route host is cluster-specific. The configure-securesign-issuer PostSync
+# job replaces it with the live platform-rhbk route, and the Application
+# ignores that field so self-heal does not put the placeholder back.
+# Tekton Chains is not wired to this instance yet.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    openshift.io/description: "Red Hat Trusted Artifact Signer (Fulcio, Rekor, TUF)"
+---
+apiVersion: rhtas.redhat.com/v1alpha1
+kind: Securesign
+metadata:
+  name: securesign
+  namespace: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/name: securesign
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  ctlog:
+    monitoring:
+      enabled: false
+  fulcio:
+    certificate:
+      commonName: fulcio.trusted-artifact-signer.svc
+      organizationEmail: rhtas@example.com
+      organizationName: Red Hat OpenShift AI Demo
+    config:
+      OIDCIssuers:
+        - ClientID: trusted-artifact-signer
+          Issuer: https://platform-rhbk.placeholder.example.com/realms/platform
+          IssuerURL: https://platform-rhbk.placeholder.example.com/realms/platform
+          Type: email
+    externalAccess:
+      enabled: true
+    monitoring:
+      enabled: false
+  rekor:
+    externalAccess:
+      enabled: true
+    monitoring:
+      enabled: false
+  trillian:
+    database:
+      create: true
+    monitoring:
+      enabled: false
+  tsa:
+    externalAccess:
+      enabled: true
+    monitoring:
+      enabled: false
+    ntpMonitoring:
+      enabled: false
+    signer:
+      certificateChain:
+        intermediateCA:
+          - commonName: tsa.trusted-artifact-signer.svc-intermediate
+            organizationEmail: rhtas@example.com
+            organizationName: Red Hat OpenShift AI Demo
+        leafCA:
+          commonName: tsa.trusted-artifact-signer.svc-leaf
+          organizationEmail: rhtas@example.com
+          organizationName: Red Hat OpenShift AI Demo
+        rootCA:
+          commonName: tsa.trusted-artifact-signer.svc-root
+          organizationEmail: rhtas@example.com
+          organizationName: Red Hat OpenShift AI Demo
+  tuf:
+    externalAccess:
+      enabled: true
+    keys:
+      - name: rekor.pub
+      - name: ctfe.pub
+      - name: fulcio_v1.crt.pem
+      - name: tsa.certchain.pem
+    pvc:
+      accessModes:
+        - ReadWriteOnce
+      retain: true
+      size: 100Mi
+    rootKeySecretRef:
+      name: tuf-root-keys

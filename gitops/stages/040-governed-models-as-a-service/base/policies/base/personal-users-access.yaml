@@ -2,6 +2,9 @@
 # subscription selection when a user-token key is created (e.g. GenAI
 # Playground), so personal usage is metered separately from service-account
 # provisioners.
+# Claude is omitted until Secret anthropic-provider-api-key exists. A missing
+# model marks the subscription Degraded, and the MaaS page then hides
+# gpt-4o-mini from that user.
 apiVersion: maas.opendatahub.io/v1alpha1
 kind: MaaSSubscription
 metadata:
@@ -30,11 +33,6 @@ spec:
         - limit: 1000000
           window: 1h
     - name: gpt-4o-mini
-      namespace: models-as-a-service
-      tokenRateLimits:
-        - limit: 100000
-          window: 1h
-    - name: claude-sonnet-5
       namespace: models-as-a-service
       tokenRateLimits:
         - limit: 100000
@@ -70,8 +68,6 @@ spec:
     - name: qwen3-8-27b-int4
       namespace: models-as-a-service
     - name: gpt-4o-mini
-      namespace: models-as-a-service
-    - name: claude-sonnet-5
       namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo
@@ -113,11 +109,6 @@ spec:
       tokenRateLimits:
         - limit: 100000
           window: 1h
-    - name: claude-sonnet-5
-      namespace: models-as-a-service
-      tokenRateLimits:
-        - limit: 100000
-          window: 1h
   priority: 150
   tokenMetadata:
     organizationId: rhoai3-coding-demo
@@ -149,8 +140,6 @@ spec:
     - name: qwen3-8-27b-int4
       namespace: models-as-a-service
     - name: gpt-4o-mini
-      namespace: models-as-a-service
-    - name: claude-sonnet-5
       namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo
@@ -192,11 +181,6 @@ spec:
       tokenRateLimits:
         - limit: 100000
           window: 1h
-    - name: claude-sonnet-5
-      namespace: models-as-a-service
-      tokenRateLimits:
-        - limit: 100000
-          window: 1h
   priority: 150
   tokenMetadata:
     organizationId: rhoai3-coding-demo
@@ -228,8 +212,6 @@ spec:
     - name: qwen3-8-27b-int4
       namespace: models-as-a-service
     - name: gpt-4o-mini
-      namespace: models-as-a-service
-    - name: claude-sonnet-5
       namespace: models-as-a-service
   meteringMetadata:
     organizationId: rhoai3-coding-demo

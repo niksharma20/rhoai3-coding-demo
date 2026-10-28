@@ -115,3 +115,11 @@ spec:
       jsonPointers:
         - /secret
         - /redirectURIs
+    # The configure-securesign-issuer PostSync job writes the live platform
+    # realm URL. Git keeps a placeholder so the repository has no cluster host.
+    - group: rhtas.redhat.com
+      kind: Securesign
+      name: securesign
+      namespace: trusted-artifact-signer
+      jsonPointers:
+        - /spec/fulcio/config/OIDCIssuers

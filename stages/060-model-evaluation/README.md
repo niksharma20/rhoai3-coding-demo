@@ -22,7 +22,7 @@ TrustyAI stays `Removed` in Stage 010. This stage's sync hook sets it to `Manage
 
 ## What This Stage Adds
 
-- TrustyAI `Managed` on the `DataScienceCluster`, applied by a sync hook because Stage 010 ignores that field.
+- TrustyAI `Managed` on the `DataScienceCluster`, applied by a sync hook because Stage 010 ignores that field. The `demo-sandbox` project also has a `TrustyAIService`. That is the AI Explainability (XAI) view: bias, data drift, and which inputs moved a prediction. It applies to OpenVINO-served predictive models. It does not explain the vLLM Qwen chat models.
 - EvalHub in the `evalhub` project, single-tenant, with PostgreSQL. The database password is created by `deploy.sh` and is not in Git.
 - Providers `lm-evaluation-harness`, `garak`, `guidellm`, and `ragas`.
 - Collections `standard-llm-evals-v1` and `safety-and-fairness-v1`.

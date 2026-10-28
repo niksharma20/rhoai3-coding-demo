@@ -44,7 +44,9 @@ MCP_CONFIGMAP="${RHOAI_OPENSHIFT_MCP_CONFIGMAP:-openshift-mcp-config}"
 MCP_DISCOVERY_CONFIGMAP="${RHOAI_MCP_DISCOVERY_CONFIGMAP:-gen-ai-aa-mcp-servers}"
 MCP_DISCOVERY_KEY="${RHOAI_OPENSHIFT_MCP_DISCOVERY_KEY:-OpenShift-MCP}"
 MCP_IMAGE="${RHOAI_OPENSHIFT_MCP_IMAGE:-quay.io/containers/kubernetes_mcp_server:latest}"
-PLAYGROUND_VLLM_MAX_TOKENS="${RHOAI_PLAYGROUND_VLLM_MAX_TOKENS:-512}"
+# Qwen3.6 spends this budget on reasoning and the MCP tool result before
+# it emits the final message. 512 stops the call with no message.
+PLAYGROUND_VLLM_MAX_TOKENS="${RHOAI_PLAYGROUND_VLLM_MAX_TOKENS:-32768}"
 # Keep the dashboard-generated provider id stable while changing the provider
 # implementation to remote::openai. The generated provider number can change
 # when the dashboard recreates a playground, so validation discovers model ids
@@ -278,8 +280,21 @@ validate_playground_if_present() {
   local config_file output models_output
   local lsd_token_result deploy_token_result
 
+  # OpenShift AI 3.5 creates the playground as an OGXServer. The
+  # LlamaStackDistribution CRD is not installed; OGX replaces it.
   if ! resource_exists "llamastackdistribution/${PLAYGROUND_LSD_NAME}" "$PROJECT_NS"; then
-    check "Gen AI Playground LlamaStackDistribution is not present yet" "pass"
+    local ogx_secret ogx_key ogx_result
+    ogx_result="deployment missing"
+    if resource_exists "deployment/${PLAYGROUND_LSD_NAME}" "$PROJECT_NS"; then
+      ogx_secret=$(jsonpath "deployment/${PLAYGROUND_LSD_NAME}" "$PROJECT_NS" "{.spec.template.spec.containers[0].env[?(@.name==\"VLLM_API_TOKEN_1\")].valueFrom.secretKeyRef.name}")
+      ogx_key=$(jsonpath "deployment/${PLAYGROUND_LSD_NAME}" "$PROJECT_NS" "{.spec.template.spec.containers[0].env[?(@.name==\"VLLM_API_TOKEN_1\")].valueFrom.secretKeyRef.key}")
+      if [[ -n "$ogx_secret" && -n "$ogx_key" ]]; then
+        ogx_result="pass"
+      else
+        ogx_result="VLLM_API_TOKEN_1 is missing or still inline"
+      fi
+    fi
+    check "Gen AI Playground OGX server has a MaaS token" "$ogx_result"
     return
   fi
 
@@ -682,7 +697,8 @@ DSC_OGX=$(jsonpath "datasciencecluster/default-dsc" "" "{.spec.components.ogx.ma
 [[ "$DSC_OGX" == "Managed" ]] && R="pass" || R="ogx=${DSC_OGX:-not found}"
 check "DataScienceCluster OGX is Managed" "$R"
 
-for flag in modelAsService vLLMDeploymentOnMaaS genAiStudio maasAuthPolicies observabilityDashboard; do
+# maasAuthPolicies is omitted: RHOAI 3.5.2 rejects that dashboard field.
+for flag in modelAsService vLLMDeploymentOnMaaS genAiStudio observabilityDashboard; do
   value=$(jsonpath "odhdashboardconfig/odh-dashboard-config" "redhat-ods-applications" "{.spec.dashboardConfig.${flag}}")
   [[ "$value" == "true" ]] && R="pass" || R="${flag}=${value:-missing}"
   check "Dashboard flag enabled: ${flag}" "$R"
@@ -744,14 +760,15 @@ dns-operator-stable-redhat-operators-openshift-marketplace|${PINNED_DNS_CSV}|dns
 limitador-operator-stable-redhat-operators-openshift-marketplace|${PINNED_LIMITADOR_CSV}|limitador-operator.v1.4.3|Limitador
 EOF
 
+# llamastackdistributions is not required: OGX replaces Llama Stack, and the
+# stage removes llamastackoperator so OGX can be created.
 for crd in \
   kuadrants.kuadrant.io \
   authorinos.operator.authorino.kuadrant.io \
   gateways.gateway.networking.k8s.io \
   httproutes.gateway.networking.k8s.io \
   leaderworkersetoperators.operator.openshift.io \
-  leaderworkersets.leaderworkerset.x-k8s.io \
-  llamastackdistributions.llamastack.io; do
+  leaderworkersets.leaderworkerset.x-k8s.io; do
   if crd_exists "$crd"; then
     R="pass"
   else
@@ -806,7 +823,9 @@ else
 fi
 check "OpenAI provider Secret present with api-key data key and IPP label" "$R"
 
-if resource_exists "secret/${ANTHROPIC_PROVIDER_SECRET}" "$MAAS_NS"; then
+if [[ -z "${ANTHROPIC_API_KEY:-}" && -z "${RHOAI_ANTHROPIC_API_KEY:-}" ]]; then
+  warn "Anthropic provider Secret present with api-key data key and IPP label" "ANTHROPIC_API_KEY is unset; Claude stays unpublished"
+elif resource_exists "secret/${ANTHROPIC_PROVIDER_SECRET}" "$MAAS_NS"; then
   ANTHROPIC_SECRET_LABEL=$(jsonpath "secret/${ANTHROPIC_PROVIDER_SECRET}" "$MAAS_NS" "{.metadata.labels.inference\\.llm-d\\.ai/ipp-managed}")
   if oc get "secret/${ANTHROPIC_PROVIDER_SECRET}" -n "$MAAS_NS" -o jsonpath='{.data}' \
     --insecure-skip-tls-verify=true 2>/dev/null | grep -q 'api-key' &&
@@ -820,7 +839,9 @@ else
 fi
 check "Anthropic provider Secret present with api-key data key and IPP label" "$R"
 
-if resource_exists "secret/redhat-models-provider-api-key" "$MAAS_NS"; then
+if [[ -z "${REDHAT_MODELS_API_KEY:-}" && -z "${RHOAI_REDHAT_MODELS_API_KEY:-}" ]]; then
+  warn "Red Hat internal models provider Secret present with api-key data key and IPP label" "REDHAT_MODELS_API_KEY is unset; those models stay unpublished"
+elif resource_exists "secret/redhat-models-provider-api-key" "$MAAS_NS"; then
   REDHAT_SECRET_LABEL=$(jsonpath "secret/redhat-models-provider-api-key" "$MAAS_NS" "{.metadata.labels.inference\\.llm-d\\.ai/ipp-managed}")
   if oc get "secret/redhat-models-provider-api-key" -n "$MAAS_NS" -o jsonpath='{.data}' \
     --insecure-skip-tls-verify=true 2>/dev/null | grep -q 'api-key' &&
@@ -885,8 +906,10 @@ else
 fi
 check "Authorino TLS enabled" "$R"
 
-if crd_exists tenants.maas.opendatahub.io && resource_exists "tenant/default-tenant" "$MAAS_NS"; then
-  TENANT_READY=$(jsonpath "tenant/default-tenant" "$MAAS_NS" "{.status.conditions[?(@.type==\"Ready\")].status}")
+# RHOAI 3.5 writes Ready on the controller-owned MaasTenantConfig. The GitOps
+# Tenant remains the input and does not carry that condition.
+if crd_exists maastenantconfigs.maas.opendatahub.io && resource_exists "maastenantconfig/default-tenant" "$MAAS_NS"; then
+  TENANT_READY=$(jsonpath "maastenantconfig/default-tenant" "$MAAS_NS" "{.status.conditions[?(@.type==\"Ready\")].status}")
   [[ "$TENANT_READY" == "True" ]] && R="pass" || R="ready=${TENANT_READY:-missing}"
 else
   R="missing"

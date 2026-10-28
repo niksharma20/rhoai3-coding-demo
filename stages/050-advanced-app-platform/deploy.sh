@@ -73,13 +73,31 @@ if [[ -n "${IMAGE_REGISTRY:-}" && -n "${QUAY_ROBOT_USER:-}" && -n "${QUAY_ROBOT_
     --dry-run=client -o yaml | oc apply -f -
   log_info "quay push/pull secrets + IMAGE_REGISTRY=${IMAGE_REGISTRY} provisioned (source)"
 else
-  # Empty secret keeps the PipelineRun workspace binding satisfied; the
-  # pipeline falls back to the internal OpenShift registry.
+  # No Quay robot is configured. Publish to the internal registry. buildah
+  # reads .dockerconfigjson from this secret; an empty generic secret makes
+  # the push step fail. The coolstore-dev pipeline ServiceAccount can push
+  # to that project's image stream, so the copied secret uses its token.
+  PIPELINE_SA_NS="coolstore-dev"
+  if ! oc get sa pipeline -n "$PIPELINE_SA_NS" >/dev/null 2>&1; then
+    PIPELINE_SA_NS="app-platform-build"
+  fi
+  REGISTRY_TOKEN="$(oc create token pipeline -n "$PIPELINE_SA_NS" --duration=6h)"
   for quay_secret in quay-push-secret quay-pull-secret; do
-    oc get secret "$quay_secret" -n app-platform-build >/dev/null 2>&1 || \
-      oc create secret generic "$quay_secret" -n app-platform-build
+    for ns in app-platform-build "$PIPELINE_SA_NS"; do
+      oc get ns "$ns" >/dev/null 2>&1 || continue
+      current_type="$(oc get secret "$quay_secret" -n "$ns" -o jsonpath='{.type}' 2>/dev/null || true)"
+      if [[ -n "$current_type" && "$current_type" != "kubernetes.io/dockerconfigjson" ]]; then
+        oc delete secret "$quay_secret" -n "$ns" --ignore-not-found >/dev/null
+      fi
+      oc create secret docker-registry "$quay_secret" -n "$ns" \
+        --docker-server="image-registry.openshift-image-registry.svc:5000" \
+        --docker-username="pipeline" \
+        --docker-password="${REGISTRY_TOKEN}" \
+        --dry-run=client -o yaml | oc apply -f -
+    done
   done
-  log_info "IMAGE_REGISTRY/QUAY_* not set — pipelines use the internal registry"
+  unset REGISTRY_TOKEN
+  log_info "IMAGE_REGISTRY/QUAY_* not set — internal registry credentials provisioned"
 fi
 
 # --- RHDH GitHub integration (scaffolder templates publish to GitHub) ---

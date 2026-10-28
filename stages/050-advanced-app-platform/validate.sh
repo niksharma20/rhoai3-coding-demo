@@ -22,7 +22,7 @@ log_step "Pipelines runtime"
 check "TektonConfig ready" \
   "oc get tektonconfig config -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}'" \
   "True"
-check_warn "Securesign instance exists (arrives with stage implementation)" \
+check "Securesign instance exists" \
   "oc get securesign -A --no-headers 2>/dev/null | wc -l | tr -d ' '" \
   "1"
 

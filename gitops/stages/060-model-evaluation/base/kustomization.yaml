@@ -13,6 +13,7 @@ resources:
   - clusterrole-enable-trustyai.yaml
   - clusterrolebinding-enable-trustyai.yaml
   - job-enable-trustyai.yaml
+  - trustyai-service-demo-sandbox.yaml
   - nemo-configmap.yaml
   - nemo-guardrails.yaml
   - nemo-gateway-service.yaml

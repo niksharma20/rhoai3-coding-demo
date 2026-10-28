@@ -63,7 +63,7 @@ Stage 040 is the governance control point for all model consumption that follows
 | Name | Owners | Models (limit/1h) | Priority | Purpose |
 |------|--------|-------------------|----------|---------|
 | `devspaces-coding-models` | SA `devspace-maas-key-provisioner` | qwen3-6-27b @20M/1h, qwen3-8-27b-int4 @20M/1h | 100 | Dev Spaces workspaces (Kilo Code / OpenCode). Default client model is qwen3-8-27b-int4; qwen3-6-27b stays selectable |
-| `personal-kube-admin` / `personal-ai-developer` / `personal-ai-admin` | one user each | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K, claude-sonnet-5 @100K | **150** | Interactive/Playground — wins user-token selection |
+| `personal-kube-admin` / `personal-ai-developer` / `personal-ai-admin` | one user each | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K | **150** | Interactive/Playground — wins user-token selection. Claude stays off until the Anthropic secret exists, so the subscription stays Active and GPT-4o mini stays visible |
 | `personal-admin` | OpenShift user `admin` | qwen3-6-27b @1M, qwen3-8-27b-int4 @1M, gpt-4o-mini @100K | **160** | Sandbox console login. Claude stays off this subscription until the Anthropic provider Secret exists |
 
 Retired: `rhoai-developers-coding-models`, `enterprise-rag-autorag`, `developer-hub-models`, `model-evaluation`, `ai-safety-guardrails`. The last three had no API keys and no running consumer. `ai-admin` and `ai-developer` keep access through their personal subscriptions.

@@ -53,10 +53,10 @@ wait_for() {
 }
 
 gitops_csv_succeeded() {
-  oc get csv -n openshift-operators \
+  oc get csv -A \
     -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' \
     --insecure-skip-tls-verify=true 2>/dev/null \
-    | grep openshift-gitops | grep -q Succeeded
+    | grep openshift-gitops-operator | grep -q Succeeded
 }
 
 argocd_available() {
@@ -68,14 +68,21 @@ argocd_available() {
 # ── Step 1: Bootstrap OpenShift GitOps operator ───────────────────────────────
 echo ""
 echo "── Step 1: Installing OpenShift GitOps operator ──"
-# Apply the operator overlay (base Subscription + baseline-pinned channel).
-# Never apply bootstrap/base directly: its channel is a placeholder.
-oc apply -k "$ROOT_DIR/gitops/bootstrap/overlays/operator" --insecure-skip-tls-verify=true
+# A sandbox often already runs GitOps from openshift-gitops-operator. Applying
+# the demo Subscription into openshift-operators then fails the CSV with
+# InterOperatorGroupOwnerConflict, because two OperatorGroups own the same API.
+# Keep the installed operator and do not add a second subscription.
+if gitops_csv_succeeded; then
+  echo "✓ OpenShift GitOps operator is already installed. Not adding a second subscription."
+else
+  # Apply the operator overlay (base Subscription + baseline-pinned channel).
+  # Never apply bootstrap/base directly: its channel is a placeholder.
+  oc apply -k "$ROOT_DIR/gitops/bootstrap/overlays/operator" --insecure-skip-tls-verify=true
 
-echo "   Waiting for openshift-gitops-operator CSV to reach Succeeded …"
-wait_for 300 "GitOps operator CSV Succeeded" gitops_csv_succeeded || exit 1
-
-echo "✓ OpenShift GitOps operator ready"
+  echo "   Waiting for openshift-gitops-operator CSV to reach Succeeded …"
+  wait_for 300 "GitOps operator CSV Succeeded" gitops_csv_succeeded || exit 1
+  echo "✓ OpenShift GitOps operator ready"
+fi
 
 # ── Step 2: Wait for default ArgoCD instance to be Available ─────────────────
 echo ""

@@ -56,7 +56,12 @@ csv_phase_from_subscription() {
 }
 
 # ── 1. OpenShift GitOps operator ─────────────────────────────────────────────
+# The demo Subscription lives in openshift-operators. A cluster that already
+# provides GitOps keeps that operator; a second subscription conflicts.
 GITOPS_CSV=$(csv_phase_from_subscription openshift-operators openshift-gitops-operator)
+if [[ "$GITOPS_CSV" != "Succeeded" ]]; then
+  GITOPS_CSV=$(csv_phase_from_subscription openshift-gitops-operator openshift-gitops-operator)
+fi
 [[ "$GITOPS_CSV" == "Succeeded" ]] && R="pass" || R="phase=${GITOPS_CSV:-not found}"
 check "OpenShift GitOps operator CSV Succeeded" "$R"
 

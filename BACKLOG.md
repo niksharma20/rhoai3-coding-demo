@@ -401,7 +401,7 @@ Stage 040 validation must keep asserting that `maas-api` uses `registry.redhat.i
 - [ ] Reset stale-golden guard: `--golden <sha>` and a warning when `golden` is not the last blessed baseline.
 - [ ] Kilo codebase indexing against `granite-embedding-english-r2`.
 - [ ] Dev Spaces `devspace-ai-tools-init` via `mount-on-start`, including the GitOps `agentic-coolstore` DevWorkspace. Do not half-land it.
-- [ ] Tekton Chains signed provenance on `app-platform-push` once a Securesign instance exists.
+- [ ] Tekton Chains signed provenance on `app-platform-push`. The Securesign instance is installed; Chains is not attached to the pipeline yet.
 - [ ] Developer Lightspeed overlay for Developer Hub, after a live LCS-to-MaaS protocol check.
 - [ ] Trusted-delivery stage: SLSA, sigstore, SBOM and TPA for the migrated app, after a concrete pipeline and validation path exist.
 - [ ] `GITHUB_OWNER` substitution so a fresh environment is not pinned to one account. This copy uses `niksharma20` for stage 050 application repositories.

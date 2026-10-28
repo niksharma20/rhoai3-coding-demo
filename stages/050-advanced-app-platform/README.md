@@ -25,7 +25,7 @@ Without a portal, the AI platform remains scattered across dashboards, routes, n
 
 ## Architecture
 
-Red Hat Developer Hub provides the portal surface: software catalog, TechDocs, and (in Phase 3) golden-path templates that provision per-run repositories for the AI development stages. Red Hat OpenShift Pipelines provides the Tekton runtime for build pipelines; Red Hat Trusted Artifact Signer provides the sigstore stack (Fulcio CA, Rekor transparency log) for signing and attestation once the Securesign instance is configured.
+Red Hat Developer Hub provides the portal surface: software catalog, TechDocs, and (in Phase 3) golden-path templates that provision per-run repositories for the AI development stages. Red Hat OpenShift Pipelines provides the Tekton runtime for build pipelines. Red Hat Trusted Artifact Signer provides the sigstore stack (Fulcio CA, Rekor transparency log, TUF) through the `securesign` instance in `trusted-artifact-signer`. Fulcio trusts the platform realm. Tekton Chains is not attached to the project pipelines yet.
 
 Operator co-tenancy note: both delivery operators install into `openshift-operators` with `Automatic` approval. Stage 040 deploys Red Hat Connectivity Link subscriptions with `Manual` approval in the same namespace, and OLM applies the most restrictive approval to shared InstallPlans. A Sync hook Job (`approve-installplans.yaml`) approves pending InstallPlans that carry the Pipelines or TAS CSVs.
 
@@ -87,14 +87,14 @@ authorize a second migration seat.
 
 - **The platform layer comes before the developer arc.** Portal, pipelines, and signing infrastructure exist before stage 060 issues the first prompt — so every AI workflow lands on governed rails instead of retrofitting them.
 - **Self-service surface.** Catalog entities make ownership, lifecycle, tags, source links, and workflow docs visible; component-specific Dev Spaces links route developers into the correct controlled workspace.
-- **Delivery evidence, operator-managed.** The Tekton stack is operator-managed and ready; TAS awaits its Securesign instance. AI-generated code needs the same supply-chain evidence as human-written code.
+- **Delivery evidence, operator-managed.** The Tekton stack is operator-managed, and the Securesign instance is installed. AI-generated code needs the same supply-chain evidence as human-written code. Signed provenance on the project pipeline is still a follow-on.
 - **Operator co-tenancy is a real platform skill.** The InstallPlan hook shows how later stages must account for earlier stages' subscription approval policies in shared namespaces.
 
 ## How Red Hat And Open Source Make It Work
 
 Red Hat Developer Hub packages Backstage for OpenShift with operator-based deployment, supported configuration, and dynamic plugin management. The catalog is generated at deploy time: a Sync hook Job resolves Dev Spaces and TechDocs placeholders with cluster-specific URLs into a runtime ConfigMap; a PostSync Job discovers routes, creates the OIDC client, generates session secrets, patches `rhdh-secrets`, and restarts the deployment.
 
-Red Hat OpenShift Pipelines brings Tekton with Pipelines-as-Code and Tekton Chains for automated SLSA provenance. Red Hat Trusted Artifact Signer packages sigstore (Fulcio, Rekor, Cosign) with OIDC-bound signing identities. In the implementation phase these combine with SonarQube quality gates into the shared delivery path used by all three AI development stages.
+Red Hat OpenShift Pipelines brings Tekton with Pipelines-as-Code and Tekton Chains for automated SLSA provenance. Red Hat Trusted Artifact Signer packages sigstore (Fulcio, Rekor, Cosign) with OIDC-bound signing identities. The Securesign instance is installed and trusts the platform realm. SonarQube quality gates already sit on the shared delivery path. Wiring Tekton Chains to that path is still open.
 
 ## Trust Boundaries
 
@@ -134,7 +134,7 @@ Developer Hub is a discovery and self-service surface: it links to approved plat
 
 **Show (today, base setup).**
 - OpenShift console, Pipelines view: the Tekton stack is operator-managed; each project namespace runs its own `app-push` pipeline instantiated from the shared `project-pipeline` base.
-- Operators view: Trusted Artifact Signer installed — the sigstore stack awaiting its Securesign instance.
+- Operators view: Trusted Artifact Signer installed, with the `securesign` instance in `trusted-artifact-signer`.
 - Talk track: a project pipeline runs build and the SonarQube quality gate. With Chains and Trusted Artifact Signer configured, the same pipeline can record signed SLSA attestation.
 
 ## Deploy And Validate
@@ -148,7 +148,7 @@ Manifests: [`gitops/stages/050-advanced-app-platform/base/`](../../gitops/stages
 
 Flow dependency: Stage 040 (Governed Models-as-a-Service). `deploy.sh` provisions the build-pipeline secrets from `.env` (`GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`) before applying the Application, then seeds the coolstore dev environment: it sets the `rhoai3-golden-path` topic on `coolstore-inventory-service`, creates a seed PipelineRun, waits for it to go green (cold cache ~15 min), and rolls the `coolstore-dev` deployment onto the fresh `:latest` image. Re-running `deploy.sh` skips the seed when the deployment is already Available.
 
-Validation notes: `validate.sh` treats a missing Securesign instance as a warning, not a failure — it arrives with the implementation phase. Stages 060–080 each keep a read-only `validate.sh` that checks this stage's resources from their demo's perspective.
+Validation notes: `validate.sh` requires one Securesign instance. Fulcio's issuer is filled in after sync from the live `platform-rhbk` route, so the committed manifest keeps a placeholder hostname. Stages 060–080 each keep a read-only `validate.sh` that checks this stage's resources from their demo's perspective.
 
 ## References
 

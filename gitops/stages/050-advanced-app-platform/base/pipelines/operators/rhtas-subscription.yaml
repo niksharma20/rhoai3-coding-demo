@@ -1,8 +1,7 @@
 # Red Hat Trusted Artifact Signer: sigstore-based signing and attestation
 # (Fulcio, Rekor, CLI server) for AI-generated artifacts.
-# The Securesign instance is created in the stage implementation phase:
-# its Fulcio OIDC issuer wires to the Stage 090 Keycloak and needs live
-# validation before it lands in GitOps.
+# The Securesign instance lives in trusted-artifact-signer. Fulcio trusts
+# the platform realm; configure-securesign-issuer fills in the live route.
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:

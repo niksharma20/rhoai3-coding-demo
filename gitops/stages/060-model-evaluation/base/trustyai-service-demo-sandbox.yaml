@@ -1,0 +1,30 @@
+# Project service behind the dashboard card "Model monitoring bias"
+# (AI Explainability / XAI). The TrustyAI operator is already Managed.
+# This instance lives in demo-sandbox, away from the vLLM servers.
+# TrustyAI's supported model runtime is OpenVINO Model Server, so this
+# service does not explain the Qwen chat models.
+# Ref: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/monitoring_your_ai_systems/index
+apiVersion: trustyai.opendatahub.io/v1
+kind: TrustyAIService
+metadata:
+  name: trustyai-service
+  namespace: demo-sandbox
+  labels:
+    app.kubernetes.io/part-of: rhoai-platform
+    app.kubernetes.io/name: trustyai-service
+    app.kubernetes.io/component: explainability
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  storage:
+    format: PVC
+    folder: /inputs
+    size: 1Gi
+  data:
+    filename: data.csv
+    format: CSV
+  metrics:
+    schedule: 5s
+    batchSize: 5000

@@ -1,0 +1,124 @@
+# Point Fulcio at the live platform RHBK realm. The Securesign manifest
+# keeps a placeholder issuer so the repository does not record a cluster
+# hostname. This job runs after sync and is safe to re-run.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: configure-securesign-issuer
+  namespace: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: configure-securesign-issuer
+  namespace: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+rules:
+  - apiGroups: ["rhtas.redhat.com"]
+    resources: ["securesigns"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: configure-securesign-issuer
+  namespace: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+subjects:
+  - kind: ServiceAccount
+    name: configure-securesign-issuer
+    namespace: trusted-artifact-signer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: configure-securesign-issuer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: configure-securesign-issuer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+rules:
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: configure-securesign-issuer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+subjects:
+  - kind: ServiceAccount
+    name: configure-securesign-issuer
+    namespace: trusted-artifact-signer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: configure-securesign-issuer
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-securesign-issuer
+  namespace: trusted-artifact-signer
+  labels:
+    app.kubernetes.io/name: configure-securesign-issuer
+    app.kubernetes.io/part-of: rhoai3-coding-demo
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "9"
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      serviceAccountName: configure-securesign-issuer
+      restartPolicy: Never
+      containers:
+        - name: patch
+          image: registry.redhat.io/openshift4/ose-cli@sha256:69762925e16053d77685ff3a08b3b45dd2bfa5d68277851bc6969b368bbd0cb9
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              for i in $(seq 1 30); do
+                if oc get securesign securesign -n trusted-artifact-signer >/dev/null 2>&1; then
+                  break
+                fi
+                echo "waiting for Securesign ($i/30)"
+                sleep 10
+              done
+              host="$(oc get route platform-rhbk -n rhbk -o jsonpath='{.spec.host}')"
+              if [[ -z "${host}" ]]; then
+                echo "ERROR: platform-rhbk route has no host"
+                exit 1
+              fi
+              issuer="https://${host}/realms/platform"
+              oc patch securesign securesign -n trusted-artifact-signer --type=json -p "[
+                {\"op\":\"replace\",\"path\":\"/spec/fulcio/config/OIDCIssuers/0/Issuer\",\"value\":\"${issuer}\"},
+                {\"op\":\"replace\",\"path\":\"/spec/fulcio/config/OIDCIssuers/0/IssuerURL\",\"value\":\"${issuer}\"}
+              ]"
+              echo "Fulcio issuer set to the platform realm"

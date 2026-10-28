@@ -27,7 +27,7 @@ def check_links() -> None:
         target = link.rsplit("/#", 1)[1].replace("${{ parameters.name }}", "creation-probe")
         repo, query = target.split("?", 1)
         params = parse_qs(query, keep_blank_values=True)
-        assert repo == "https://github.com/adnan-drina/creation-probe", repo
+        assert repo == "https://github.com/niksharma20/creation-probe", repo
         assert params == {"revision": ["main"], "existing": ["creation-probe"]}, params
         if name == "app-migration":
             devfile = (templates / name / "skeleton/devfile.yaml").read_text()
